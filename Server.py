@@ -1,5 +1,7 @@
 from flask import Flask, jsonify, request
 
+app = Flask('__name__')
+
 # Para testar se o servidor tá funcionando
 @app.route('/ping', methods=['GET'])
 def ping():
