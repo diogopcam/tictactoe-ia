@@ -90,5 +90,5 @@ class KNN:
 
         # Fazer a predição com o modelo
         prediction = self.model.predict(data_df)
-        print(f'Resultado da predição: {prediction}')
+        print(f'Resultado da predição do KNN: {prediction}')
         return prediction.tolist()
