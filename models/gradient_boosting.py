@@ -43,5 +43,5 @@ class GradientBoosting:
 
         # Realiza a predição
         prediction = self.model.predict(data_df)
-        print(f'Resultado da predição: {prediction}')
+        print(f'Resultado da predição do Gradient Boosting: {prediction}')
         return prediction.tolist()

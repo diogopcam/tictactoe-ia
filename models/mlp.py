@@ -46,6 +46,7 @@ class MLPModel:
 
             # Fazer a predição com o modelo
             prediction = self.model.predict(data_df)
+            print(f'Resultado da predição do MLP: {prediction}')
             return prediction.tolist()
         except Exception as e:
             print(f"Erro na predição: {e}")

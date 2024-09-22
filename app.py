@@ -2,12 +2,12 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from models.knn import KNN
 from models.gradient_boosting import GradientBoosting
-from models.mlp import MLP  # Certifique-se de que o caminho está correto
+from models.mlp import MLPModel  # Certifique-se de que o caminho está correto
 
 # Inicializando os modelos
 knn_model = KNN()
 gradient_boosting_model = GradientBoosting()
-mlp_model = MLP()  # Inicialize o modelo MLP
+mlp_model = MLPModel()  # Inicialize o modelo MLP
 
 # Treinando os modelos
 knn_model.train_model_knn()
