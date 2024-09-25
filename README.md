@@ -1,34 +1,33 @@
 <h1 align="center">Aplicando algoritmos de classificação no dataset Tic-Tac-Toe Endgame</h1>
-<p align="center"><i>Trabalho avaliativo da disciplina de Inteligência Artificial ministrada pela professora Silvia Maria W. Moraes que consiste no desenvolvimento de um jogo da velha e o uso de algoritmos de classificação para rotular quais casos do tabuleiro resultam em vitória de determinado jogador, empate ou jogo em andamento.</i></p>
+<p align="center"><i>Trabalho avaliativo da disciplina de Inteligência Artificial ministrada pela professora Silvia Maria W. Moraes. O projeto envolve a análise de combinações de tabuleiros de Jogo da Velha (Tic-Tac-Toe) e a aplicação de algoritmos de classificação para prever o resultado do jogo: vitória de um dos jogadores, empate ou jogo em andamento.</i></p>
 
-Para finalizar o nosso README podemos adicionar estatísticas sobre o repositório como Linguagem mais utilizada, Número de linguagens presentes, qualidade do código e muitas outras através da ferramenta oferecida pela Codacy. Não abordaremos aqui como cadastrar seu repositório e ter acesso a estas estatísticas já que no site deles já tem uma documentação completa sobre isto. Veja como fica:
+## Sobre o Projeto
 
-![added-statistics-to-structure](https://raw.githubusercontent.com/balta-io/blog/main/documentacao-com-github/images/added-statistics-to-structure.jpg)
+Este repositório tem como objetivo desenvolver um sistema que aplica algoritmos de classificação em estados de jogo do Jogo da Velha. Utilizando um conjunto de dados pré-existente, o sistema classifica se um determinado estado do tabuleiro resulta em uma vitória, empate ou jogo ainda em andamento. Os principais algoritmos de classificação usados são KNN (K-Nearest Neighbors), Decision Tree, MLP (Multi-Layer Perceptron), Gradient Boosting, entre outros.
 
-##  About this project
+Além disso, o projeto também visa a construção e simulação de jogos da velha com diferentes configurações de jogadas, aplicando teoria de jogos e combinatória para gerar cenários em andamento e rotular esses casos.
 
-This is a repository used as a base to show the operation of Issues, Discussions, Wiki and other GitHub resources in addition to code versioning..
+### Tecnologias Utilizadas
 
-The project inserted into this repository is a pre-existing template and is used as a basis for displaying statistical data about it.
-
-### Technologies
 <p display="inline-block">
-  <img width="48" src="https://www.freeiconspng.com/uploads/c-logo-icon-18.png" alt="csharp-logo"/>
+  <img width="48" src="https://upload.wikimedia.org/wikipedia/commons/e/ed/Pandas_logo.svg" alt="pandas-logo"/>
+  <img width="48" src="https://upload.wikimedia.org/wikipedia/commons/0/05/Scikit_learn_logo_small.svg" alt="scikit-learn-logo"/>
+  <img width="48" src="https://upload.wikimedia.org/wikipedia/commons/3/33/Falcon_Middle.png" alt="flask-logo"/>
+  <img width="48" src="https://upload.wikimedia.org/wikipedia/commons/8/87/Sql_data_base_with_logo.png" alt="sql-logo"/>
 </p>
-                                                                                                  
-### Development Tools
+
+- **Python**: Linguagem principal para o desenvolvimento de scripts de análise de dados e implementação dos algoritmos de classificação.
+- **Pandas**: Biblioteca utilizada para manipulação e análise de dados.
+- **Scikit-learn**: Biblioteca para aplicar os algoritmos de classificação.
+- **Flask**: Framework usado para criar a API que irá interagir com o sistema de previsão.
+- **SQL**: Banco de dados usado para armazenar os resultados das partidas e as previsões.
+
+### Ferramentas de Desenvolvimento
 
 <p display="inline-block">
   <img width="48" src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Visual_Studio_Code_1.35_icon.svg/2048px-Visual_Studio_Code_1.35_icon.svg.png" alt="vscode-logo"/>
+  <img width="48" src="https://www.jetbrains.com/pycharm/img/pycharm_logo.svg" alt="pycharm-logo"/>
 </p>
 
-## Running
-dotnet run
-
-## References
-[About issues - GitHub Docs](https://docs.github.com/en/issues/tracking-your-work-with-issues/about-issues)
-
-[About wikis - GitHub Docs](https://docs.github.com/en/communities/documenting-your-project-with-wikis/about-wikis)
-
-[About discussions - GitHub Docs](https://docs.github.com/en/discussions/collaborating-with-your-community-using-discussions/about-discussions)
-
+- **Visual Studio Code**: Editor de código utilizado para desenvolver a aplicação.
+- **PyCharm**: IDE utilizada para testes e desenvolvimento de algoritmos de machine learning.
