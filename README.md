@@ -3,7 +3,7 @@
 
 ## Sobre o Projeto
 
-Este repositório tem como objetivo desenvolver um sistema que aplica algoritmos de classificação em estados de jogo do Jogo da Velha. Utilizando um conjunto de dados pré-existente, o sistema classifica se um determinado estado do tabuleiro resulta em uma vitória, empate ou jogo ainda em andamento. Os principais algoritmos de classificação usados são KNN (K-Nearest Neighbors), Decision Tree, MLP (Multi-Layer Perceptron), Gradient Boosting, entre outros.
+Este repositório tem como objetivo desenvolver um sistema que aplica algoritmos de classificação em estados de jogo do Jogo da Velha. Utilizando um conjunto de dados pré-existente, o sistema classifica se um determinado estado do tabuleiro resulta em uma vitória, empate ou jogo ainda em andamento. Os algoritmos de classificação utilizados são KNN (K-Nearest Neighbors), MLP (Multi-Layer Perceptron) e Gradient Boosting.
 
 Além disso, o projeto também visa a construção e simulação de jogos da velha com diferentes configurações de jogadas, aplicando teoria de jogos e combinatória para gerar cenários em andamento e rotular esses casos.
 
@@ -20,7 +20,6 @@ Além disso, o projeto também visa a construção e simulação de jogos da vel
 - **Pandas**: Biblioteca utilizada para manipulação e análise de dados.
 - **Scikit-learn**: Biblioteca para aplicar os algoritmos de classificação.
 - **Flask**: Framework usado para criar a API que irá interagir com o sistema de previsão.
-- **SQL**: Banco de dados usado para armazenar os resultados das partidas e as previsões.
 
 ### Ferramentas de Desenvolvimento
 
@@ -29,5 +28,4 @@ Além disso, o projeto também visa a construção e simulação de jogos da vel
   <img width="48" src="https://www.jetbrains.com/pycharm/img/pycharm_logo.svg" alt="pycharm-logo"/>
 </p>
 
-- **Visual Studio Code**: Editor de código utilizado para desenvolver a aplicação.
 - **PyCharm**: IDE utilizada para testes e desenvolvimento de algoritmos de machine learning.
