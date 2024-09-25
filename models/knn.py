@@ -5,8 +5,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-
-
 class KNN:
     def __init__(self):
         self.model = KNeighborsClassifier(n_neighbors=3)
@@ -16,12 +14,14 @@ class KNN:
         # Exemplo de dados de treino
         df_treino = pd.read_excel('datasets/treino.xlsx')
         df_teste = pd.read_excel('datasets/teste.xlsx')
+        df_validacao = pd.read_excel('datasets/validacao.xlsx')
+
 
         X_train = df_treino.drop(['target'], axis=1)  # Características
         y_train = df_treino['target']
 
-        X_test = df_teste.drop(['target'], axis=1)
-        y_test = df_teste['target']
+        X_test = df_validacao.drop(['target'], axis=1)
+        y_test = df_validacao['target']
 
         self.columns = X_train.columns  # Salvar as colunas de treinamento
         self.model.fit(X_train, y_train)
@@ -38,21 +38,21 @@ class KNN:
         self.model.fit(X_train, y_train)
         # print("Modelo KNN treinado!")
 
-        # # Realiza a predição com os atributos de teste
-        # y_pred = self.model.predict(X_test)
-        #
+        # Realiza a predição com os atributos de teste
+        y_pred = self.model.predict(X_test)
+
         # # Calcula a acurácia e outras métricas
         # accuracy = accuracy_score(y_test, y_pred)
         # precision = precision_score(y_test, y_pred, average='weighted')
         # recall = recall_score(y_test, y_pred, average='weighted')
         # f1 = f1_score(y_test, y_pred, average='weighted')
-
+        #
         # # Exibe as métricas
         # print(f'Acurácia: {accuracy:.2f}')
         # print(f'Precisão: {precision:.2f}')
         # print(f'Recall: {recall:.2f}')
         # print(f'F1-Score: {f1:.2f}')
-
+        #
         # # Calcule e exiba a matriz de confusão
         # cm = confusion_matrix(y_test, y_pred)
         # plt.figure(figsize=(10, 7))
