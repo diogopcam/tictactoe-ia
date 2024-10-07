@@ -61,6 +61,14 @@ Resposta esperada:
 }
 ```
 
+Caso o servidor esteja funcionando, você pode executar o front-end da aplicação com os seguintes comandos:
+
+npm install
+
+npm start
+
+Desse modo, você será capaz de interagir com o front-end da aplicação.
+
 ### Rotas da API
 
 1. **/ping**
