@@ -1,34 +1,92 @@
-<h1 align="center">Aplicando algoritmos de classificação no dataset Tic-Tac-Toe Endgame</h1>
-<p align="center"><i>Trabalho avaliativo da disciplina de Inteligência Artificial ministrada pela professora Silvia Maria W. Moraes que consiste no desenvolvimento de um jogo da velha e o uso de algoritmos de classificação para rotular quais casos do tabuleiro resultam em vitória de determinado jogador, empate ou jogo em andamento.</i></p>
+# Documentação do Projeto de Previsão de Modelos de Machine Learning
 
-Para finalizar o nosso README podemos adicionar estatísticas sobre o repositório como Linguagem mais utilizada, Número de linguagens presentes, qualidade do código e muitas outras através da ferramenta oferecida pela Codacy. Não abordaremos aqui como cadastrar seu repositório e ter acesso a estas estatísticas já que no site deles já tem uma documentação completa sobre isto. Veja como fica:
+## Visão Geral
+Este projeto é uma API desenvolvida em Flask que utiliza três algoritmos de aprendizado de máquina: K-Nearest Neighbors (KNN), Gradient Boosting e Multi-Layer Perceptron (MLP) para classificar o estado do tabuleiro de jogo da velha a cada jogada. A API realiza previsões com os modelos treinados.
 
-![added-statistics-to-structure](https://raw.githubusercontent.com/balta-io/blog/main/documentacao-com-github/images/added-statistics-to-structure.jpg)
+## Instalação
 
-##  About this project
+### Requisitos
+Certifique-se de ter o Python 3.x instalado. Você também precisará das seguintes bibliotecas:
 
-This is a repository used as a base to show the operation of Issues, Discussions, Wiki and other GitHub resources in addition to code versioning..
+```bash
+pip install Flask flask-cors pandas scikit-learn openpyxl
+Estrutura de Diretórios
+bash
+Copiar código
+project/
+│
+├── app.py  # Arquivo principal da API
+├── models/
+│   ├── knn.py  # Implementação do modelo KNN
+│   ├── gradient_boosting.py  # Implementação do modelo Gradient Boosting
+│   └── mlp.py  # Implementação do modelo MLP
+└── datasets/
+    ├── treino.xlsx  # Conjunto de dados para treino
+    ├── teste.xlsx   # Conjunto de dados para teste
+    └── validacao.xlsx  # Conjunto de dados para validação
+Uso
+Inicie a API
+Execute o seguinte comando no terminal:
 
-The project inserted into this repository is a pre-existing template and is used as a basis for displaying statistical data about it.
+bash
+Copiar código
+python app.py
+A API será iniciada em http://127.0.0.1:5000.
 
-### Technologies
-<p display="inline-block">
-  <img width="48" src="https://www.freeiconspng.com/uploads/c-logo-icon-18.png" alt="csharp-logo"/>
-</p>
-                                                                                                  
-### Development Tools
+Testar o Servidor
+Você pode verificar se o servidor está funcionando fazendo uma requisição GET para /ping:
 
-<p display="inline-block">
-  <img width="48" src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Visual_Studio_Code_1.35_icon.svg/2048px-Visual_Studio_Code_1.35_icon.svg.png" alt="vscode-logo"/>
-</p>
+bash
+Copiar código
+curl http://127.0.0.1:5000/ping
+Resposta esperada:
 
-## Running
-dotnet run
-
-## References
-[About issues - GitHub Docs](https://docs.github.com/en/issues/tracking-your-work-with-issues/about-issues)
-
-[About wikis - GitHub Docs](https://docs.github.com/en/communities/documenting-your-project-with-wikis/about-wikis)
-
-[About discussions - GitHub Docs](https://docs.github.com/en/discussions/collaborating-with-your-community-using-discussions/about-discussions)
-
+json
+Copiar código
+{
+  "message": "Servidor está funcionando!"
+}
+Rotas da API
+/ping
+Método: GET
+Descrição: Verifica se o servidor está funcionando.
+Resposta: Mensagem de confirmação.
+/verifyState
+Método: POST
+Descrição: Recebe dados para verificação de estado.
+Corpo da Requisição: JSON
+Resposta: Mensagem de sucesso.
+/models/knn
+Método: POST
+Descrição: Envia dados para o modelo KNN e retorna a previsão.
+Corpo da Requisição: JSON contendo as características.
+Resposta: Previsão do modelo KNN.
+/models/gb
+Método: POST
+Descrição: Envia dados para o modelo Gradient Boosting e retorna a previsão.
+Corpo da Requisição: JSON contendo as características.
+Resposta: Previsão do modelo Gradient Boosting.
+/models/mlp
+Método: POST
+Descrição: Envia dados para o modelo MLP e retorna a previsão.
+Corpo da Requisição: JSON contendo as características.
+Resposta: Previsão do modelo MLP.
+Descrição dos Modelos
+KNN
+Implementado em: models/knn.py.
+Utiliza: O algoritmo K-Nearest Neighbors.
+Métodos principais:
+train_model_knn(): Carrega dados, treina o modelo.
+predict(data): Realiza a previsão com os dados fornecidos.
+Gradient Boosting
+Implementado em: models/gradient_boosting.py.
+Utiliza: O algoritmo Gradient Boosting.
+Métodos principais:
+train_model_gb(): Carrega dados, treina o modelo.
+predict(data): Realiza a previsão com os dados fornecidos.
+MLP
+Implementado em: models/mlp.py.
+Utiliza: O algoritmo Multi-Layer Perceptron.
+Métodos principais:
+train_model_mlp(): Carrega dados, treina o modelo.
+predict(data): Realiza a previsão com os dados fornecidos.
