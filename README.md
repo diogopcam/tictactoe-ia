@@ -10,9 +10,10 @@ Este projeto é uma API desenvolvida em Flask que utiliza três algoritmos de ap
 ### Requisitos
 Certifique-se de ter o Python 3.x instalado. Você também precisará das seguintes bibliotecas:
 
-```bash
+
 pip install Flask flask-cors pandas scikit-learn openpyxl
-Estrutura de Diretórios
+
+### Estrutura de Diretórios
 bash
 Copiar código
 project/
