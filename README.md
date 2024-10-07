@@ -61,11 +61,13 @@ Resposta esperada:
 }
 ```
 
-Caso o servidor esteja funcionando, você pode executar o front-end da aplicação com os seguintes comandos:
+Caso o servidor esteja funcionando, você pode executar o front-end da aplicação com os seguintes comandos após ir até o diretório **tictactoe**:
 
+```
 npm install
 
 npm start
+```
 
 Desse modo, você será capaz de interagir com o front-end da aplicação.
 
