@@ -9,13 +9,13 @@ Este projeto é uma API desenvolvida em Flask que utiliza três algoritmos de ap
 
 ### Requisitos
 Certifique-se de ter o Python 3.x instalado. Você também precisará das seguintes bibliotecas:
-
-
-pip install Flask flask-cors pandas scikit-learn openpyxl
+    - Flask 
+    - Flask-cors 
+    - Pandas 
+    - Scikit-learn 
+    - openpyxl
 
 ### Estrutura de Diretórios
-bash
-Copiar código
 project/
 │
 ├── app.py                  # Arquivo principal da API
@@ -27,20 +27,17 @@ project/
     ├── treino.xlsx         # Conjunto de dados para treino
     ├── teste.xlsx          # Conjunto de dados para teste
     └── validacao.xlsx      # Conjunto de dados para validação
-Uso
+
+### Uso
 Iniciar a API
 Execute o seguinte comando no terminal para iniciar a API:
 
-bash
-Copiar código
 python app.py
 A API será iniciada em http://127.0.0.1:5000.
 
-Testar o Servidor
+### Testar o Servidor
 Você pode verificar se o servidor está funcionando fazendo uma requisição GET para /ping:
 
-bash
-Copiar código
 curl http://127.0.0.1:5000/ping
 Resposta esperada:
 
@@ -49,44 +46,53 @@ Copiar código
 {
   "message": "Servidor está funcionando!"
 }
-Rotas da API
+
+### Rotas da API
 /ping
 Método: GET
 Descrição: Verifica se o servidor está funcionando.
 Resposta: Mensagem de confirmação.
+
 /verifyState
 Método: POST
 Descrição: Recebe dados para verificação de estado.
 Corpo da Requisição: JSON
 Resposta: Mensagem de sucesso.
+
 /models/knn
 Método: POST
 Descrição: Envia dados para o modelo KNN e retorna a previsão.
 Corpo da Requisição: JSON contendo as características.
 Resposta: Previsão do modelo KNN.
+
 /models/gb
 Método: POST
 Descrição: Envia dados para o modelo Gradient Boosting e retorna a previsão.
 Corpo da Requisição: JSON contendo as características.
 Resposta: Previsão do modelo Gradient Boosting.
+
 /models/mlp
 Método: POST
 Descrição: Envia dados para o modelo MLP e retorna a previsão.
 Corpo da Requisição: JSON contendo as características.
 Resposta: Previsão do modelo MLP.
-Descrição dos Modelos
+
+### Descrição dos Modelos
+
 KNN (K-Nearest Neighbors)
 Implementado em: models/knn.py
 Utiliza: Algoritmo K-Nearest Neighbors
 Métodos principais:
 train_model_knn(): Carrega dados e treina o modelo.
 predict(data): Realiza a previsão com os dados fornecidos.
+
 Gradient Boosting
 Implementado em: models/gradient_boosting.py
 Utiliza: Algoritmo Gradient Boosting
 Métodos principais:
 train_model_gb(): Carrega dados e treina o modelo.
 predict(data): Realiza a previsão com os dados fornecidos.
+
 MLP (Multi-Layer Perceptron)
 Implementado em: models/mlp.py
 Utiliza: Algoritmo Multi-Layer Perceptron
@@ -94,5 +100,4 @@ Métodos principais:
 train_model_mlp(): Carrega dados e treina o modelo.
 predict(data): Realiza a previsão com os dados fornecidos.
 perl
-Copiar código
 
