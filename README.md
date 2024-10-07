@@ -49,55 +49,31 @@ Copiar código
 
 ### Rotas da API
 /ping
-Método: GET
-Descrição: Verifica se o servidor está funcionando.
-Resposta: Mensagem de confirmação.
+    Método: GET
+    Descrição: Verifica se o servidor está funcionando.
+    Resposta: Mensagem de confirmação.
 
 /verifyState
-Método: POST
-Descrição: Recebe dados para verificação de estado.
-Corpo da Requisição: JSON
-Resposta: Mensagem de sucesso.
+    Método: POST
+    Descrição: Recebe dados para verificação de estado.
+    Corpo da Requisição: JSON
+    Resposta: Mensagem de sucesso.
 
 /models/knn
-Método: POST
-Descrição: Envia dados para o modelo KNN e retorna a previsão.
-Corpo da Requisição: JSON contendo as características.
-Resposta: Previsão do modelo KNN.
+    Método: POST
+    Descrição: Envia dados para o modelo KNN e retorna a previsão.
+    Corpo da Requisição: JSON contendo as características.
+    Resposta: Previsão do modelo KNN.
 
 /models/gb
-Método: POST
-Descrição: Envia dados para o modelo Gradient Boosting e retorna a previsão.
-Corpo da Requisição: JSON contendo as características.
-Resposta: Previsão do modelo Gradient Boosting.
+    Método: POST
+    Descrição: Envia dados para o modelo Gradient Boosting e retorna a previsão.
+    Corpo da Requisição: JSON contendo as características.
+    Resposta: Previsão do modelo Gradient Boosting.
 
 /models/mlp
-Método: POST
-Descrição: Envia dados para o modelo MLP e retorna a previsão.
-Corpo da Requisição: JSON contendo as características.
-Resposta: Previsão do modelo MLP.
-
-### Descrição dos Modelos
-
-KNN (K-Nearest Neighbors)
-Implementado em: models/knn.py
-Utiliza: Algoritmo K-Nearest Neighbors
-Métodos principais:
-train_model_knn(): Carrega dados e treina o modelo.
-predict(data): Realiza a previsão com os dados fornecidos.
-
-Gradient Boosting
-Implementado em: models/gradient_boosting.py
-Utiliza: Algoritmo Gradient Boosting
-Métodos principais:
-train_model_gb(): Carrega dados e treina o modelo.
-predict(data): Realiza a previsão com os dados fornecidos.
-
-MLP (Multi-Layer Perceptron)
-Implementado em: models/mlp.py
-Utiliza: Algoritmo Multi-Layer Perceptron
-Métodos principais:
-train_model_mlp(): Carrega dados e treina o modelo.
-predict(data): Realiza a previsão com os dados fornecidos.
-perl
+    Método: POST
+    Descrição: Envia dados para o modelo MLP e retorna a previsão.
+    Corpo da Requisição: JSON contendo as características.
+    Resposta: Previsão do modelo MLP.
 
