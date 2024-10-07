@@ -1,31 +1,92 @@
-<h1 align="center">Aplicando algoritmos de classificação no dataset Tic-Tac-Toe Endgame</h1>
-<p align="center"><i>Trabalho avaliativo da disciplina de Inteligência Artificial ministrada pela professora Silvia Maria W. Moraes. O projeto envolve a análise de combinações de tabuleiros de Jogo da Velha (Tic-Tac-Toe) e a aplicação de algoritmos de classificação para prever o resultado do jogo: vitória de um dos jogadores, empate ou jogo em andamento.</i></p>
+# Documentação do Projeto de Previsão de Modelos de Machine Learning
 
-## Sobre o Projeto
+## Visão Geral
+Este projeto é uma API desenvolvida em Flask que utiliza três algoritmos de aprendizado de máquina: K-Nearest Neighbors (KNN), Gradient Boosting e Multi-Layer Perceptron (MLP) para classificar o estado do tabuleiro de jogo da velha a cada jogada. A API realiza previsões com os modelos treinados.
 
-Este repositório tem como objetivo desenvolver um sistema que aplica algoritmos de classificação em estados de jogo do Jogo da Velha. Utilizando um conjunto de dados pré-existente, o sistema classifica se um determinado estado do tabuleiro resulta em uma vitória, empate ou jogo ainda em andamento. Os algoritmos de classificação utilizados são KNN (K-Nearest Neighbors), MLP (Multi-Layer Perceptron) e Gradient Boosting.
+## Instalação
 
-Além disso, o projeto também visa a construção e simulação de jogos da velha com diferentes configurações de jogadas, aplicando teoria de jogos e combinatória para gerar cenários em andamento e rotular esses casos.
+### Requisitos
+Certifique-se de ter o Python 3.x instalado. Você também precisará das seguintes bibliotecas:
 
-### Tecnologias Utilizadas
+```bash
+pip install Flask flask-cors pandas scikit-learn openpyxl
+Estrutura de Diretórios
+bash
+Copiar código
+project/
+│
+├── app.py  # Arquivo principal da API
+├── models/
+│   ├── knn.py  # Implementação do modelo KNN
+│   ├── gradient_boosting.py  # Implementação do modelo Gradient Boosting
+│   └── mlp.py  # Implementação do modelo MLP
+└── datasets/
+    ├── treino.xlsx  # Conjunto de dados para treino
+    ├── teste.xlsx   # Conjunto de dados para teste
+    └── validacao.xlsx  # Conjunto de dados para validação
+Uso
+Inicie a API
+Execute o seguinte comando no terminal:
 
-<p display="inline-block">
-  <img width="48" src="https://upload.wikimedia.org/wikipedia/commons/e/ed/Pandas_logo.svg" alt="pandas-logo"/>
-  <img width="48" src="https://upload.wikimedia.org/wikipedia/commons/0/05/Scikit_learn_logo_small.svg" alt="scikit-learn-logo"/>
-  <img width="48" src="https://upload.wikimedia.org/wikipedia/commons/3/33/Falcon_Middle.png" alt="flask-logo"/>
-  <img width="48" src="https://upload.wikimedia.org/wikipedia/commons/8/87/Sql_data_base_with_logo.png" alt="sql-logo"/>
-</p>
+bash
+Copiar código
+python app.py
+A API será iniciada em http://127.0.0.1:5000.
 
-- **Python**: Linguagem principal para o desenvolvimento de scripts de análise de dados e implementação dos algoritmos de classificação.
-- **Pandas**: Biblioteca utilizada para manipulação e análise de dados.
-- **Scikit-learn**: Biblioteca para aplicar os algoritmos de classificação.
-- **Flask**: Framework usado para criar a API que irá interagir com o sistema de previsão.
+Testar o Servidor
+Você pode verificar se o servidor está funcionando fazendo uma requisição GET para /ping:
 
-### Ferramentas de Desenvolvimento
+bash
+Copiar código
+curl http://127.0.0.1:5000/ping
+Resposta esperada:
 
-<p display="inline-block">
-  <img width="48" src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Visual_Studio_Code_1.35_icon.svg/2048px-Visual_Studio_Code_1.35_icon.svg.png" alt="vscode-logo"/>
-  <img width="48" src="https://www.jetbrains.com/pycharm/img/pycharm_logo.svg" alt="pycharm-logo"/>
-</p>
-
-- **PyCharm**: IDE utilizada para testes e desenvolvimento de algoritmos de machine learning.
+json
+Copiar código
+{
+  "message": "Servidor está funcionando!"
+}
+Rotas da API
+/ping
+Método: GET
+Descrição: Verifica se o servidor está funcionando.
+Resposta: Mensagem de confirmação.
+/verifyState
+Método: POST
+Descrição: Recebe dados para verificação de estado.
+Corpo da Requisição: JSON
+Resposta: Mensagem de sucesso.
+/models/knn
+Método: POST
+Descrição: Envia dados para o modelo KNN e retorna a previsão.
+Corpo da Requisição: JSON contendo as características.
+Resposta: Previsão do modelo KNN.
+/models/gb
+Método: POST
+Descrição: Envia dados para o modelo Gradient Boosting e retorna a previsão.
+Corpo da Requisição: JSON contendo as características.
+Resposta: Previsão do modelo Gradient Boosting.
+/models/mlp
+Método: POST
+Descrição: Envia dados para o modelo MLP e retorna a previsão.
+Corpo da Requisição: JSON contendo as características.
+Resposta: Previsão do modelo MLP.
+Descrição dos Modelos
+KNN
+Implementado em: models/knn.py.
+Utiliza: O algoritmo K-Nearest Neighbors.
+Métodos principais:
+train_model_knn(): Carrega dados, treina o modelo.
+predict(data): Realiza a previsão com os dados fornecidos.
+Gradient Boosting
+Implementado em: models/gradient_boosting.py.
+Utiliza: O algoritmo Gradient Boosting.
+Métodos principais:
+train_model_gb(): Carrega dados, treina o modelo.
+predict(data): Realiza a previsão com os dados fornecidos.
+MLP
+Implementado em: models/mlp.py.
+Utiliza: O algoritmo Multi-Layer Perceptron.
+Métodos principais:
+train_model_mlp(): Carrega dados, treina o modelo.
+predict(data): Realiza a previsão com os dados fornecidos.
