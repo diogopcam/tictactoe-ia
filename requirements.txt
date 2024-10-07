@@ -3,3 +3,5 @@ requests
 gunicorn==23.0.0
 flask-cors
 numpy
+sklearn
+openpyxl
