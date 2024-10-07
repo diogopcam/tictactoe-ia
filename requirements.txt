@@ -5,3 +5,4 @@ flask-cors
 numpy
 scikit-learn
 openpyxl
+pandas
