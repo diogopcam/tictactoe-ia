@@ -3,11 +3,13 @@ from flask_cors import CORS
 from models.knn import KNN
 from models.gradient_boosting import GradientBoosting
 from models.mlp import MLPModel
+from models.mini_max import Minimax
 
 # Inicializando os modelos
 knn_model = KNN()
 gradient_boosting_model = GradientBoosting()
 mlp_model = MLPModel()
+minimax = Minimax()
 
 # Treinando os modelos
 knn_model.train_model_knn()
@@ -48,6 +50,14 @@ def send_to_mlp():
     app.logger.info('Recebido dados para MLP: %s', data)
     prediction = mlp_model.predict(data)
     return jsonify({"prediction": prediction})
+
+@app.route('/play', methods=['POST'])
+def play():
+    data = request.json
+    board = data.get('board')  # O tabuleiro atual
+    difficulty = data.get('difficulty', 'hard')  # Dificuldade padrão é 'hard'
+    move = minimax.find_best_move(board, difficulty)
+    return jsonify({"move": move})
 
 if __name__ == '__main__':
     app.run(debug=True)
