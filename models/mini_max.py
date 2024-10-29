@@ -11,7 +11,7 @@ class Minimax:
             return -1  # X (humano) ganha
         elif winner == 'O':
             return 1  # O (IA) ganha
-        elif all(s != None for s in board):
+        elif all(s is not None for s in board):
             return 0  # Empate
 
         if is_maximizing:
@@ -62,10 +62,11 @@ class Minimax:
         return random.choice(empty_indices) if empty_indices else None
 
     def medium_move(self, board):
-        # A IA joga de forma aleatória, mas também considera bloquear o oponente
-        move = self.random_move(board)
-        if move is not None:
-            return move
+        # 50% de chance de jogar com minimax e 50% de jogada aleatória
+        if random.random() < 0.5:
+            return self.random_move(board)
+        else:
+            return self.hard_move(board)
 
     def hard_move(self, board):
         best_score = float('-inf')
