@@ -80,3 +80,7 @@ class Minimax:
                     best_score = score
                     best_move = i
         return best_move
+
+    def get_available_moves(self, board):
+        """Retorna uma lista dos índices das posições disponíveis no tabuleiro."""
+        return [i for i in range(9) if board[i] is None]
