@@ -60,6 +60,7 @@ def play():
 
     # Obtém movimentos disponíveis e verifica se está vazio
     available_moves = minimax.get_available_moves(board)
+    print("Essa é a lista de posicoes disponiveis:" + str(available_moves))
 
     if not available_moves:  # Se não houver movimentos disponíveis
         return jsonify({"error": "Nenhum movimento disponível"}), 400
@@ -67,10 +68,13 @@ def play():
     # Lógica para escolher a jogada com base na dificuldade
     if difficulty == 'easy':
         move = random.choice(available_moves)
+        print("A dificuldade é fácil e esse é o retorno da jogada:" + str(move))
     elif difficulty == 'normal':
         move = minimax.find_best_move(board, difficulty='normal')
+        print("A dificuldade é médio e esse é o retorno da jogada:" + str(move))
     else:  # Hard
         move = minimax.find_best_move(board, difficulty='hard')
+        print("A dificuldade é médio e esse é o retorno da jogada:" + str(move))
 
     return jsonify({"move": move})
 

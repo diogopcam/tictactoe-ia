@@ -83,4 +83,4 @@ class Minimax:
 
     def get_available_moves(self, board):
         """Retorna uma lista dos índices das posições disponíveis no tabuleiro."""
-        return [i for i in range(9) if board[i] is None]
+        return [i for i in range(9) if board[i] == 0]
