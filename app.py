@@ -51,21 +51,25 @@ def send_to_mlp():
 def play():
     data = request.json
     board = data.get('board')
-    difficulty = data.get('difficulty', 'hard')
+    difficulty = data.get('difficulty')
+    print("Esse é o tabuleiro: " + str(board))
+    print("Essa é a dificuldade: " + difficulty)
 
+    if board is None or difficulty is None:
+        return jsonify({"error": "Parâmetros 'board' ou 'difficulty' ausentes"}), 400
+
+    # Obtém movimentos disponíveis e verifica se está vazio
+    available_moves = minimax.get_available_moves(board)
+
+    if not available_moves:  # Se não houver movimentos disponíveis
+        return jsonify({"error": "Nenhum movimento disponível"}), 400
+
+    # Lógica para escolher a jogada com base na dificuldade
     if difficulty == 'easy':
-        # Jogada aleatória
-        available_moves = minimax.get_available_moves(board)
         move = random.choice(available_moves)
     elif difficulty == 'normal':
-        # 50% minimax, 50% jogada aleatória
-        if random.random() < 0.5:
-            available_moves = minimax.get_available_moves(board)
-            move = random.choice(available_moves)
-        else:
-            move = minimax.find_best_move(board, difficulty='normal')
+        move = minimax.find_best_move(board, difficulty='normal')
     else:  # Hard
-        # Somente minimax
         move = minimax.find_best_move(board, difficulty='hard')
 
     return jsonify({"move": move})
