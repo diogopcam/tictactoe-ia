@@ -54,8 +54,26 @@ def play():
     # Instancia o Minimax com o estado atual do tabuleiro
     minimax = Minimax(board)
 
-    # Obtém o melhor movimento
-    best_move = minimax.get_melhor()
+    # Obtém as posições livres
+    free_positions = minimax.livres(board)
+    print("Posições livres: ", free_positions)
+
+    if difficulty == 'easy':
+        # Escolhe uma jogada aleatória entre as posições livres
+        free_positions = minimax.livres(board)
+        best_move = random.choice(free_positions)
+
+    elif difficulty == 'medium':
+        # 50% de chance de fazer uma jogada aleatória ou usar o Minimax
+        if random.random() < 0.5:
+            free_positions = minimax.livres(board)
+            best_move = random.choice(free_positions)
+        else:
+            best_move = minimax.get_melhor()
+
+    else:  # hard
+        # Usa sempre o Minimax para encontrar a melhor jogada
+        best_move = minimax.get_melhor()
 
     print("Esse é o tabuleiro: " + str(board))
     print("Essa é a dificuldade: " + difficulty)

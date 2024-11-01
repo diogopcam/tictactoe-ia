@@ -13,10 +13,13 @@ class Minimax:
         self.estado = estado
 
     def get_melhor(self):
-        melhor = self.algoritmo(self.estado, False, self.livres(self.estado))
+        melhor = self.algoritmo(self.estado, False, self.livres_quant(self.estado))
         return melhor.x * 3 + melhor.y
 
     def livres(self, estado):
+        return [i for i, cell in enumerate(estado) if cell == 0]
+
+    def livres_quant(self, estado):
         return sum(1 for cell in estado if cell == 0)
 
     def gera_vizinhos(self, estado, caracter):
