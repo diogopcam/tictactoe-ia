@@ -57,3 +57,10 @@ class GeneticAlgorithm:
             self.mutate(child2)
             new_population.extend([child1, child2])
         self.population = new_population
+
+# Teste para verificar a saída do SimpleMLP
+mlp = SimpleMLP()
+board_state = np.random.uniform(-1, 1, 9)  # Exemplo de entrada aleatória para o tabuleiro
+output = mlp.forward(board_state)
+print("Saída da rede neural (deve somar aproximadamente 1):", output)
+print("Formato da saída:", output.shape)
