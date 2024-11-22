@@ -1,6 +1,82 @@
 import numpy as np
 import random
 
+class Sucessor:
+    def __init__(self, estado, valor, x=None, y=None):
+        self.estado = estado
+        self.valor = valor
+        self.x = x
+        self.y = y
+
+    def get_valor(self):
+        return self.valor
+
+class Minimax:
+    def __init__(self, estado):
+        self.estado = estado
+
+    def get_melhor(self):
+        melhor = self.algoritmo(self.estado, False, self.livres_quant(self.estado))
+        return melhor.x * 3 + melhor.y
+
+    def livres(self, estado):
+        return [i for i, cell in enumerate(estado) if cell == 0]
+
+    def livres_quant(self, estado):
+        return sum(1 for cell in estado if cell == 0)
+
+    def gera_vizinhos(self, estado, caracter):
+        posicoes = [(i // 3, i % 3) for i, v in enumerate(estado) if v == 0]
+        vizinhos = []
+
+        for pos in posicoes:
+            novo_estado = estado[:]
+            novo_estado[pos[0] * 3 + pos[1]] = caracter
+            vizinhos.append((novo_estado, pos))
+        return vizinhos
+
+    def utilidade(self, atual, profundidade):
+        if self.vencedor(atual, 1):
+            return -1
+        if self.vencedor(atual, -1):
+            return 1
+        if profundidade == 0:
+            return 0
+        return 100
+
+    def vencedor(self, atual, caracter):
+        linhas = [atual[i * 3:(i + 1) * 3] for i in range(3)]
+        colunas = [atual[i::3] for i in range(3)]
+        diagonais = [[atual[i * 3 + i] for i in range(3)], [atual[i * 3 + (2 - i)] for i in range(3)]]
+
+        for linha in linhas + colunas + diagonais:
+            if all(cell == caracter for cell in linha):
+                return True
+        return False
+
+    def algoritmo(self, estado, jogador, profundidade):
+        valor = self.utilidade(estado, profundidade)
+        if valor != 100:
+            return Sucessor(estado, valor)
+
+        melhor_sucessor = None
+
+        if jogador:  # adversário
+            menor = float('inf')
+            for vizinho, (x, y) in self.gera_vizinhos(estado, 1):
+                sucessor = self.algoritmo(vizinho, False, profundidade - 1)
+                if sucessor.get_valor() < menor:
+                    menor = sucessor.get_valor()
+                    melhor_sucessor = Sucessor(vizinho, menor, x, y)
+        else:  # computador
+            maior = float('-inf')
+            for vizinho, (x, y) in self.gera_vizinhos(estado, -1):
+                sucessor = self.algoritmo(vizinho, True, profundidade - 1)
+                if sucessor.get_valor() > maior:
+                    maior = sucessor.get_valor()
+                    melhor_sucessor = Sucessor(vizinho, maior, x, y)
+
+        return melhor_sucessor
 
 class SimpleMLP:
     def __init__(self):
@@ -159,14 +235,21 @@ class GeneticAlgorithm:
         binary_vector[max_index] = 1
         return binary_vector
 
-    def pseudo_minimax(self, board_state):
-        print("Adversário jogando (pseudo-minimax).")
-        new_board_state = board_state.copy()
-        for i in range(len(new_board_state)):
-            if new_board_state[i] == 0:
-                new_board_state[i] = -1
-                break
+    def pseudo_minimax(self, estado):
+        print("Adversário jogando (minimax).")
+
+        # Criamos o objeto Minimax passando o estado inicial
+        minimax = Minimax(estado)
+
+        # Obtemos a melhor jogada do adversário utilizando o algoritmo Minimax
+        melhor_jogada = minimax.get_melhor()
+
+        # Atualiza o estado do tabuleiro com a jogada do adversário
+        new_board_state = estado.copy()
+        new_board_state[melhor_jogada] = -1  # Considerando que o adversário joga com '1'
+
         return new_board_state
+
 
     def is_game_ongoing(self, board_state):
         win_conditions = [
@@ -221,7 +304,7 @@ class GeneticAlgorithm:
         return best_individuals, best_fitness
 
 # Número de gerações
-num_generations = 50
+num_generations = 1
 
 # Inicializa o Algoritmo Genético
 gen_alg = GeneticAlgorithm(population_size=10, mutation_rate=0.05)
