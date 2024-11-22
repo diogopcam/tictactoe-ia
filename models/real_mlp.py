@@ -87,35 +87,53 @@ class SimpleMLP:
 
     def initialize_weights_and_bias(self, weights):
         print("Inicializando pesos e vieses do MLP.")
-        self.weights_input_hidden = np.array(weights[:81]).reshape(9, 9)
-        self.bias_hidden = np.array(weights[81:90])
-        self.weights_hidden_output = np.array(weights[90:171]).reshape(9, 9)
-        self.bias_output = np.array(weights[171:180])
+
+        self.weights_input_hidden = np.array(weights[:81]).reshape(9, 9) * np.sqrt(2. / 9)
+        self.bias_hidden = np.zeros(9)
+
+        self.weights_hidden_output = np.array(weights[90:171]).reshape(9, 9) * np.sqrt(2. / 9)
+        self.bias_output = np.zeros(9)
 
     def relu(self, x):
         return np.maximum(0, x)
 
-    def softmax(self, x):
-        exp_x = np.exp(x - np.max(x))
-        return exp_x / exp_x.sum(axis=0)
+    def sigmoid(self, x):
+        return 1 / (1 + np.exp(-x))
 
     def forward(self, board_state):
         print("Realizando forward pass no MLP com estado atual do tabuleiro:", board_state)
+
         hidden_input = np.dot(board_state, self.weights_input_hidden) + self.bias_hidden
         hidden_output = self.relu(hidden_input)
+
         output_input = np.dot(hidden_output, self.weights_hidden_output) + self.bias_output
-        output = self.softmax(output_input)
+        output = self.sigmoid(output_input)
         print("Saída do MLP:", output)
+
         return output
 
-
 class GeneticAlgorithm:
-    def __init__(self, population_size, mutation_rate):
+    def __init__(self, population_size, mutation_rate, convergence_threshold=0.1):
         print("Inicializando Algoritmo Genético.")
         self.population_size = population_size
         self.mutation_rate = mutation_rate
+        self.convergence_threshold = convergence_threshold
         self.population = np.random.uniform(-1, 1, (self.population_size, 181))
         print(f"População inicial gerada (tamanho {self.population_size}).")
+        self.previous_fitness = None
+
+    def translate_output_to_binary(self, output):
+        binary_vector = np.zeros_like(output)
+        max_index = np.argmax(output)
+        binary_vector[max_index] = 1
+        return binary_vector
+
+    def get_best_solutions(self, top_n=1):
+        fitness_values = np.array([self.fitness(ind) for ind in self.population])
+        sorted_indices = np.argsort(fitness_values)[::-1]
+        best_individuals = self.population[sorted_indices[:top_n]]
+        best_fitness = fitness_values[sorted_indices[:top_n]]
+        return best_individuals, best_fitness
 
     def fitness(self, individual):
         print("Calculando fitness para um indivíduo.")
@@ -128,13 +146,16 @@ class GeneticAlgorithm:
 
         while game_ongoing:
             mlp_move = self.translate_output_to_binary(mlp.forward(board_state))
+
             if self.is_valid_move(board_state, mlp_move):
                 individual[180] += 0.2
                 self.apply_move(board_state, mlp_move)
                 print("Estado do tabuleiro após a jogada da MLP:", board_state)
+
                 game_ongoing, winner = self.is_game_ongoing(board_state)
+
                 if game_ongoing:
-                    board_state = self.pseudo_minimax(board_state, 'medium')
+                    board_state = self.pseudo_minimax(board_state, 'hard')
                     print("Estado do tabuleiro após jogada do adversário:", board_state)
                     game_ongoing, winner = self.is_game_ongoing(board_state)
                     if game_ongoing:
@@ -145,38 +166,35 @@ class GeneticAlgorithm:
                 game_ongoing = False
 
         print("Jogo terminou. Resultado:", "Vitória" if winner == 1 else "Derrota" if winner == -1 else "Empate")
-        match winner:
-            case 1:
-                individual[180] *= 1.35
-            case -1:
-                individual[180] *= 0.35
-            case _:
-                individual[180] *= 1
+
+        if winner == 1:
+            individual[180] *= 1.35
+        elif winner == -1:
+            individual[180] *= 0.35
+        else:
+            individual[180] *= 1
 
         return individual[180]
 
-    def select(self):
-        # Calcula a aptidão de cada indivíduo na população
-        fitness_values = np.array([self.fitness(ind) for ind in self.population])
+    def converge(self, fitness_values):
+        if self.previous_fitness is None:
+            self.previous_fitness = fitness_values
+            return False
+        change = np.mean(np.abs(fitness_values - self.previous_fitness))
+        self.previous_fitness = fitness_values
+        return change < self.convergence_threshold
 
-        # Log dos valores de aptidão
+    def select(self):
+        fitness_values = np.array([self.fitness(ind) for ind in self.population])
         print("Fitness values (raw):", fitness_values)
 
-        # Corrige aptidões negativas, se necessário
         min_fitness = fitness_values.min()
         if min_fitness < 0:
-            fitness_values += abs(min_fitness) + 1  # Ajusta para tornar todos os valores positivos
+            fitness_values += abs(min_fitness) + 1
 
-        # Log dos valores ajustados de aptidão
-        print("Fitness values (adjusted):", fitness_values)
-
-        # Normaliza para criar probabilidades
         probabilities = fitness_values / fitness_values.sum()
-
-        # Log das probabilidades
         print("Probabilities:", probabilities)
 
-        # Seleção baseada nas probabilidades
         indices = np.random.choice(range(self.population_size), size=2, p=probabilities)
         print("Selected indices:", indices)
         return self.population[indices[0]], self.population[indices[1]]
@@ -193,35 +211,6 @@ class GeneticAlgorithm:
                 individual[i] += np.random.uniform(-0.1, 0.1)
         return individual
 
-    def evolve(self, elitism_count=1):
-        print("Iniciando evolução da população com elitismo.")
-
-        # Calcula as aptidões da população
-        fitness_values = np.array([self.fitness(ind) for ind in self.population])
-
-        # Identifica os melhores indivíduos (elitismo)
-        elite_indices = fitness_values.argsort()[-elitism_count:][::-1]
-        elite_individuals = self.population[elite_indices]
-        print(f"Indivíduos elite selecionados: {elite_indices}")
-
-        new_population = []
-
-        # Preserva os indivíduos elite
-        new_population.extend(elite_individuals)
-        print(f"Elite adicionada à nova população ({len(elite_individuals)} indivíduos).")
-
-        # Criação da nova população (exceto os elitistas)
-        while len(new_population) < self.population_size:
-            parent1, parent2 = self.select()
-            child1, child2 = self.crossover(parent1, parent2), self.crossover(parent1, parent2)
-            self.mutate(child1)
-            self.mutate(child2)
-            new_population.extend([child1, child2])
-
-        # Ajusta o tamanho da nova população (pode ultrapassar devido ao while loop)
-        self.population = np.array(new_population[:self.population_size])
-        print("População evoluída para a próxima geração.")
-
     def apply_move(self, board_state, move):
         print("Aplicando jogada:", move)
         for i in range(len(board_state)):
@@ -229,50 +218,22 @@ class GeneticAlgorithm:
                 board_state[i] = move[i]
                 break
 
-    def translate_output_to_binary(self, output):
-        binary_vector = np.zeros_like(output)
-        max_index = np.argmax(output)
-        binary_vector[max_index] = 1
-        return binary_vector
-
     def pseudo_minimax(self, estado, difficulty):
         print("Adversário jogando (minimax).")
-
-        # Instancia o Minimax com o estado atual do tabuleiro
         minimax = Minimax(estado)
-
-        # Obtém as posições livres
         free_positions = minimax.livres(estado)
         print("Posições livres: ", free_positions)
 
         if difficulty == 'easy':
-            # Escolhe uma jogada aleatória entre as posições livres
-            free_positions = minimax.livres(estado)
             best_move = random.choice(free_positions)
-
         elif difficulty == 'medium':
-            # 50% de chance de fazer uma jogada aleatória ou usar o Minimax
-            if random.random() < 0.5:
-                free_positions = minimax.livres(estado)
-                best_move = random.choice(free_positions)
-            else:
-                best_move = minimax.get_melhor()
-
-        else:  # hard
-            # Usa sempre o Minimax para encontrar a melhor jogada
+            best_move = minimax.get_melhor() if random.random() < 0.5 else random.choice(free_positions)
+        else:
             best_move = minimax.get_melhor()
 
-        print("Esse é o tabuleiro: " + str(estado))
-        print("Essa é a dificuldade: " + difficulty)
-        print("Melhor jogada no índice: ", best_move)
-
-
-        # Atualiza o estado do tabuleiro com a jogada do adversário
         new_board_state = estado.copy()
-        new_board_state[best_move] = -1  # Considerando que o adversário joga com '1'
-
+        new_board_state[best_move] = -1
         return new_board_state
-
 
     def is_game_ongoing(self, board_state):
         win_conditions = [
@@ -298,52 +259,89 @@ class GeneticAlgorithm:
                 return True
         return False
 
-    def run(self, generations):
+    def test_accuracy(self, num_games=100):
+        print(f"Testando a rede em {num_games} jogos...")
+        best_individual = self.get_best_solutions(top_n=1)[0][0]
+        mlp = SimpleMLP()
+        mlp.initialize_weights_and_bias(best_individual[:180])
+
+        wins, losses, ties = 0, 0, 0
+        for _ in range(num_games):
+            board_state = [0] * 9
+            game_ongoing = True
+            while game_ongoing:
+                mlp_move = self.translate_output_to_binary(mlp.forward(board_state))
+                if self.is_valid_move(board_state, mlp_move):
+                    self.apply_move(board_state, mlp_move)
+                    game_ongoing, winner = self.is_game_ongoing(board_state)
+                    if game_ongoing:
+                        board_state = self.pseudo_minimax(board_state, 'hard')
+                        game_ongoing, winner = self.is_game_ongoing(board_state)
+                else:
+                    game_ongoing = False
+                    winner = -1
+
+            if winner == 1:
+                wins += 1
+            elif winner == -1:
+                losses += 1
+            else:
+                ties += 1
+
+        accuracy = (wins + ties / 2) / num_games
+        print(f"Resultado do teste após {num_games} jogos:")
+        print(f"Vitórias: {wins}, Derrotas: {losses}, Empates: {ties}")
+        print(f"Acurácia: {accuracy * 100:.2f}%")
+
+    def run(self, generations, test_after_training=True):
         print(f"Iniciando o algoritmo genético para {generations} gerações.")
         for generation in range(1, generations + 1):
             print(f"\n--- Geração {generation} ---")
-            self.evolve()
+            fitness_values = self.evolve()
 
-            # Monitoramento: calcula e exibe estatísticas da geração atual
-            fitness_values = np.array([self.fitness(ind) for ind in self.population])
             max_fitness = fitness_values.max()
             avg_fitness = fitness_values.mean()
             print(f"Máxima aptidão da geração {generation}: {max_fitness:.2f}")
             print(f"Aptidão média da geração {generation}: {avg_fitness:.2f}")
 
-        print("Evolução concluída.")
+            if self.converge(fitness_values):
+                print(f"Convergência atingida na geração {generation}. O algoritmo será interrompido.")
+                break
 
-    def get_best_solutions(self, top_n=1):
-        # Calcula a aptidão de todos os indivíduos
+        if test_after_training:
+            print("\nIniciando o teste após o treinamento...")
+            self.test_accuracy()
+
+    def evolve(self, elitism_count=1):
+        print("Iniciando evolução da população com elitismo.")
+
         fitness_values = np.array([self.fitness(ind) for ind in self.population])
 
-        # Ordena os índices com base na aptidão (do maior para o menor)
-        sorted_indices = np.argsort(fitness_values)[::-1]
+        elite_indices = fitness_values.argsort()[-elitism_count:][::-1]
+        elite_individuals = self.population[elite_indices]
+        print(f"Indivíduos elite selecionados: {elite_indices}")
 
-        # Retorna os melhores indivíduos e suas aptidões
-        best_individuals = self.population[sorted_indices[:top_n]]
-        best_fitness = fitness_values[sorted_indices[:top_n]]
+        new_population = []
 
-        return best_individuals, best_fitness
+        new_population.extend(elite_individuals)
+        print(f"Elite adicionada à nova população ({len(elite_individuals)} indivíduos).")
+
+        while len(new_population) < self.population_size:
+            parent1, parent2 = self.select()
+            child1, child2 = self.crossover(parent1, parent2), self.crossover(parent1, parent2)
+            self.mutate(child1)
+            self.mutate(child2)
+            new_population.extend([child1, child2])
+
+        self.population = np.array(new_population[:self.population_size])
+        print("População evoluída para a próxima geração.")
+        return fitness_values
 
 # Número de gerações
-num_generations = 5
+num_generations = 1000
 
 # Inicializa o Algoritmo Genético
-gen_alg = GeneticAlgorithm(population_size=10, mutation_rate=0.05)
+gen_alg = GeneticAlgorithm(population_size=10, mutation_rate=0.2)
 
-# Loop principal para evoluir as gerações
-for generation in range(num_generations):
-    print(f"\n--- Geração {generation + 1}/{num_generations} ---")
-    gen_alg.evolve(elitism_count=2)
-
-# Obter as melhores soluções
-top_n = 5  # Quantos indivíduos você quer exibir?
-best_individuals, best_fitness = gen_alg.get_best_solutions(top_n=top_n)
-
-# Exibir os resultados
-print("\nMelhores soluções após todas as gerações:")
-for i in range(top_n):
-    print(f"Indivíduo {i + 1}:")
-    print(f"Pesos e vieses: {best_individuals[i][:180]}")
-    print(f"Aptidão: {best_fitness[i]}")
+# Execute o AG
+gen_alg.run(num_generations)
