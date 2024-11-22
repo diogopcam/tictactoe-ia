@@ -134,7 +134,7 @@ class GeneticAlgorithm:
                 print("Estado do tabuleiro após a jogada da MLP:", board_state)
                 game_ongoing, winner = self.is_game_ongoing(board_state)
                 if game_ongoing:
-                    board_state = self.pseudo_minimax(board_state)
+                    board_state = self.pseudo_minimax(board_state, 'medium')
                     print("Estado do tabuleiro após jogada do adversário:", board_state)
                     game_ongoing, winner = self.is_game_ongoing(board_state)
                     if game_ongoing:
@@ -235,18 +235,41 @@ class GeneticAlgorithm:
         binary_vector[max_index] = 1
         return binary_vector
 
-    def pseudo_minimax(self, estado):
+    def pseudo_minimax(self, estado, difficulty):
         print("Adversário jogando (minimax).")
 
-        # Criamos o objeto Minimax passando o estado inicial
+        # Instancia o Minimax com o estado atual do tabuleiro
         minimax = Minimax(estado)
 
-        # Obtemos a melhor jogada do adversário utilizando o algoritmo Minimax
-        melhor_jogada = minimax.get_melhor()
+        # Obtém as posições livres
+        free_positions = minimax.livres(estado)
+        print("Posições livres: ", free_positions)
+
+        if difficulty == 'easy':
+            # Escolhe uma jogada aleatória entre as posições livres
+            free_positions = minimax.livres(estado)
+            best_move = random.choice(free_positions)
+
+        elif difficulty == 'medium':
+            # 50% de chance de fazer uma jogada aleatória ou usar o Minimax
+            if random.random() < 0.5:
+                free_positions = minimax.livres(estado)
+                best_move = random.choice(free_positions)
+            else:
+                best_move = minimax.get_melhor()
+
+        else:  # hard
+            # Usa sempre o Minimax para encontrar a melhor jogada
+            best_move = minimax.get_melhor()
+
+        print("Esse é o tabuleiro: " + str(estado))
+        print("Essa é a dificuldade: " + difficulty)
+        print("Melhor jogada no índice: ", best_move)
+
 
         # Atualiza o estado do tabuleiro com a jogada do adversário
         new_board_state = estado.copy()
-        new_board_state[melhor_jogada] = -1  # Considerando que o adversário joga com '1'
+        new_board_state[best_move] = -1  # Considerando que o adversário joga com '1'
 
         return new_board_state
 
@@ -304,7 +327,7 @@ class GeneticAlgorithm:
         return best_individuals, best_fitness
 
 # Número de gerações
-num_generations = 1
+num_generations = 5
 
 # Inicializa o Algoritmo Genético
 gen_alg = GeneticAlgorithm(population_size=10, mutation_rate=0.05)
