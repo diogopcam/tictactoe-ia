@@ -36,36 +36,53 @@ class GeneticAlgorithm:
         self.mutation_rate = mutation_rate
         self.population = np.random.uniform(-1, 1, (self.population_size, 181))
 
-    def fitness(self):
-        mlp = SimpleMLP()
+def fitness(self):
+    """
+    Avalia o fitness de cada indivíduo na população jogando contra o Minimax.
+    Atualiza o fitness no índice 181 do indivíduo após o término do jogo.
+    """
+    mlp = SimpleMLP()
+
+    for individual in self.population:
+        # Inicializa variáveis do jogo
+        mlp.initialize_weights_and_bias(individual[:180])
+        board_state = [0] * 9
         game_ongoing = True
         winner = 0
 
-        for individual in self.population:
-            mlp.initialize_weights_and_bias(individual[:180])
-            board_state = [0] * 9
-            while game_ongoing:
-                mlp_move = self.translate_output_to_binary(mlp.forward(board_state)) #transforma o vetor de probabilidades em vetor binario
-                if self.is_valid_move(board_state, mlp_move): #verifica a se a jogada da mlp é válida
-                    individual[181] += 0.2 # bonifica a mlp por fazer uma jogada válida
-                    self.apply_move(board_state, mlp_move) #aplica a jogada da mlp ao tabuleiro
-                    game_ongoing, winner = self.is_game_ongoing(board_state) #verifica se há ganhador ou empate
-                    if game_ongoing:
-                        board_state = self.pseudo_minimax(board_state) #jogada do minimax
-                        game_ongoing, winner = self.is_game_ongoing(board_state) #verifica se há ganhador ou empate
-                        if game_ongoing:
-                            individual[181] += 0.2 #minimax jogou, mas o jogo ainda nao acabou. bonifica a mlp por "sobreviver" mais uma rodada
-                else: #jogada inválida
-                    winner = -1 #jogar em uma posição inválida da a vitória para o minimax
-                    game_ongoing = False
+        # Loop do jogo
+        while game_ongoing:
+            # Jogada da Rede Neural
+            mlp_move = self.translate_output_to_binary(mlp.forward(board_state))  # Vetor binário referente à jogada da rede
+            if self.is_valid_move(board_state, mlp_move):  # Verifica se a jogada é válida
+                individual[181] += 0.2  # Bonificação por jogada válida
+                self.apply_move(board_state, mlp_move)  # Aplica a jogada da Rede Neural
 
-            match winner:
-                case 1:
-                    individual[181] *= 1.35 # rede neural ganhou
-                case -1:
-                    individual[181] *= 0.35 # minimax ganhou
-                case _:
-                    individual[181] *= 1
+                # Verifica se o jogo acabou
+                game_ongoing, winner = self.is_game_ongoing(board_state)
+                if game_ongoing:
+                    # Jogada do Minimax
+                    board_state = self.pseudo_minimax(board_state) # AQUI TEM Q BOTAR O MINIMAX DE VERDADE PRA JOGAR
+                    game_ongoing, winner = self.is_game_ongoing(board_state)
+
+                    # Bonifica a Rede Neural por "sobreviver" mais uma rodada
+                    # (aqui o minimax jogou, porém o jogo nao acabou; a rede ganha pontos de fitness)
+                    if game_ongoing:
+                        individual[181] += 0.2
+            else:
+                # Jogada inválida, Rede Neural perde imediatamente
+                winner = -1
+                game_ongoing = False
+
+        # Ajusta o fitness com base no resultado do jogo
+        match winner:
+            case 1:
+                individual[181] *= 1.35  # Rede Neural venceu
+            case -1:
+                individual[181] *= 0.35  # Minimax venceu
+            case _:
+                individual[181] *= 1.0  # Empate
+
 
 
     def select(self):
