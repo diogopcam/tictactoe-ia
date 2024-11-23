@@ -155,7 +155,7 @@ class GeneticAlgorithm:
                 game_ongoing, winner = self.is_game_ongoing(board_state)
 
                 if game_ongoing:
-                    board_state = self.pseudo_minimax(board_state, 'medium')
+                    board_state = self.pseudo_minimax(board_state, 'easy')
                     print("Estado do tabuleiro após jogada do adversário:", board_state)
                     game_ongoing, winner = self.is_game_ongoing(board_state)
                     if game_ongoing:
@@ -275,7 +275,7 @@ class GeneticAlgorithm:
                     self.apply_move(board_state, mlp_move)
                     game_ongoing, winner = self.is_game_ongoing(board_state)
                     if game_ongoing:
-                        board_state = self.pseudo_minimax(board_state, 'medium')
+                        board_state = self.pseudo_minimax(board_state, 'easy')
                         game_ongoing, winner = self.is_game_ongoing(board_state)
                 else:
                     game_ongoing = False
@@ -361,23 +361,35 @@ class GeneticAlgorithm:
 
         return best_individuals, best_fitness
 
-# Número de gerações
-num_generations = 1000
+    def get_best_model(self):
+        """
+        Retorna o melhor modelo gerado pelo Algoritmo Genético, que é o indivíduo
+        com a maior aptidão da população.
 
-# Inicializa o Algoritmo Genético
-gen_alg = GeneticAlgorithm(population_size=10, mutation_rate=0.2, convergence_threshold=0.001)
+        Returns:
+            np.ndarray: O vetor de características (genes) do melhor modelo.
+        """
+        # Obtém as melhores soluções (top 1) e retorna o melhor indivíduo
+        best_individuals, _ = self.get_best_solutions(top_n=1)
+        return best_individuals[0]
 
-# Executa o AG
-print("Executando o Algoritmo Genético...")
-gen_alg.run(num_generations, test_after_training=True)
-
-# Consulta as melhores soluções após a execução
-top_n = 5  # Número de melhores soluções que queremos inspecionar
-best_individuals, best_fitness = gen_alg.get_best_solutions(top_n=top_n)
-
-# Exibe as melhores soluções
-print(f"\nMelhores {top_n} soluções encontradas após {num_generations} gerações:")
-for i, (individual, fitness) in enumerate(zip(best_individuals, best_fitness), 1):
-    print(f"Solução #{i}:")
-    print(f"  Genes: {individual}")
-    print(f"  Aptidão: {fitness:.2f}")
+# # Número de gerações
+# num_generations = 500
+#
+# # Inicializa o Algoritmo Genético
+# gen_alg = GeneticAlgorithm(population_size=10, mutation_rate=0.2, convergence_threshold=0.001)
+#
+# # Executa o AG
+# print("Executando o Algoritmo Genético...")
+# gen_alg.run(num_generations, test_after_training=True)
+#
+# # Consulta as melhores soluções após a execução
+# top_n = 5  # Número de melhores soluções que queremos inspecionar
+# best_individuals, best_fitness = gen_alg.get_best_solutions(top_n=top_n)
+#
+# # Exibe as melhores soluções
+# print(f"\nMelhores {top_n} soluções encontradas após {num_generations} gerações:")
+# for i, (individual, fitness) in enumerate(zip(best_individuals, best_fitness), 1):
+#     print(f"Solução #{i}:")
+#     print(f"  Genes: {individual}")
+#     print(f"  Aptidão: {fitness:.2f}")

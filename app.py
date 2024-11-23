@@ -8,28 +8,39 @@ import random
 
 from models.real_mlp import GeneticAlgorithm
 
+# Número de gerações
+num_generations = 500
+
+# Inicializa o Algoritmo Genético
+gen_alg = GeneticAlgorithm(population_size=10, mutation_rate=0.2, convergence_threshold=0.001)
+
+# Executa o AG
+print("Executando o Algoritmo Genético...")
+gen_alg.run(num_generations, test_after_training=True)
+
+# Consulta as melhores soluções após a execução
+top_n = 5  # Número de melhores soluções que queremos inspecionar
+best_individuals, best_fitness = gen_alg.get_best_solutions(top_n=top_n)
+
+# Exibe as melhores soluções
+print(f"\nMelhores {top_n} soluções encontradas após {num_generations} gerações:")
+for i, (individual, fitness) in enumerate(zip(best_individuals, best_fitness), 1):
+    print(f"Solução #{i}:")
+    print(f"  Genes: {individual}")
+    print(f"  Aptidão: {fitness:.2f}")
+
 # Inicializando os modelos
 knn_model = KNN()
 gradient_boosting_model = GradientBoosting()
-mlp_model = MLPModel()
+# mlp_model = MLPModel()
 
-# Treinando os modelos
-knn_model.train_model_knn()
-gradient_boosting_model.train_model_gb()
-mlp_model.train_model_mlp()
-
-# Número de gerações
-num_generations = 1000
-
-# Inicializa o Algoritmo Genético
-gen_alg = GeneticAlgorithm(population_size=10, mutation_rate=0.2)
-
-# Execute o AG
-gen_alg.run(num_generations)
+# # Treinando os modelos
+# knn_model.train_model_knn()
+# gradient_boosting_model.train_model_gb()
+# mlp_model.train_model_mlp()
 
 app = Flask(__name__)
 CORS(app)
-
 
 @app.route('/ping', methods=['GET'])
 def ping():
@@ -49,11 +60,11 @@ def send_to_gb():
     return jsonify({"prediction": prediction})
 
 
-@app.route('/models/mlp', methods=['POST'])
-def send_to_mlp():
-    data = request.json
-    prediction = mlp_model.predict(data)
-    return jsonify({"prediction": prediction})
+# @app.route('/models/mlp', methods=['POST'])
+# def send_to_mlp():
+#     data = request.json
+#     prediction = mlp_model.predict(data)
+#     return jsonify({"prediction": prediction})
 
 
 @app.route('/play', methods=['POST'])
@@ -92,6 +103,70 @@ def play():
 
     return jsonify({'best_move': best_move})
 
+
+@app.route('/play', methods=['POST'])
+def play():
+    data = request.json
+    board = data.get('board')  # Recebe o tabuleiro como uma lista de 9 elementos
+    difficulty = data.get('difficulty', 'hard')  # A dificuldade pode ser usada para ajustar o nível da IA
+    use_genetic_mlp = data.get('use_genetic_mlp', False)  # Parâmetro para escolher entre Minimax ou MLP
+
+    if use_genetic_mlp:
+        # Usando o modelo MLP treinado pelo Algoritmo Genético
+        print("Usando o MLP treinado pelo Algoritmo Genético para jogar.")
+
+        # Obtenha o melhor modelo MLP do Algoritmo Genético
+        best_mlp = gen_alg.get_best_model()
+
+        if not best_mlp:
+            return jsonify(
+                {'error': 'O Algoritmo Genético ainda não foi executado ou não gerou um modelo válido.'}), 500
+
+        # Processa o tabuleiro para previsão
+        # O modelo MLP pode exigir um formato específico para o input
+        board_input = [board]  # Coloca o tabuleiro em uma lista para que seja compatível com a entrada do modelo
+        move_probabilities = best_mlp.predict(board_input)  # Obtém as probabilidades de cada posição
+
+        # Escolhe o índice com maior probabilidade para a jogada
+        best_move = move_probabilities.argmax()  # Melhor jogada com base no modelo
+
+        print("Tabuleiro recebido: ", board)
+        print("Melhor jogada sugerida pelo MLP: ", best_move)
+
+    else:
+        # Usando o Minimax para jogar
+        print("Usando o Minimax para jogar.")
+
+        # Instancia o Minimax com o estado atual do tabuleiro
+        minimax = Minimax(board)
+
+        # Obtém as posições livres
+        free_positions = minimax.livres(board)
+        print("Posições livres: ", free_positions)
+
+        if difficulty == 'easy':
+            # Escolhe uma jogada aleatória entre as posições livres
+            free_positions = minimax.livres(board)
+            best_move = random.choice(free_positions)
+
+        elif difficulty == 'medium':
+            # 50% de chance de fazer uma jogada aleatória ou usar o Minimax
+            if random.random() < 0.5:
+                free_positions = minimax.livres(board)
+                best_move = random.choice(free_positions)
+            else:
+                best_move = minimax.get_melhor()
+
+        else:  # hard
+            # Usa sempre o Minimax para encontrar a melhor jogada
+            best_move = minimax.get_melhor()
+
+        print("Esse é o tabuleiro: " + str(board))
+        print("Essa é a dificuldade: " + difficulty)
+        print("Melhor jogada no índice: ", best_move)
+
+    return jsonify({'best_move': best_move})
+
 @app.route('/play/genetic_mlp', methods=['POST'])
 def play_with_genetic_mlp():
     data = request.json
@@ -103,13 +178,13 @@ def play_with_genetic_mlp():
     # Obtenha o melhor modelo MLP do Algoritmo Genético
     best_mlp = gen_alg.get_best_model()
 
-    if not best_mlp:
+    if best_mlp is None:
         return jsonify({'error': 'O Algoritmo Genético ainda não foi executado ou não gerou um modelo válido.'}), 500
 
     # Processa o tabuleiro para previsão
     # O modelo MLP pode exigir um formato específico para o input
     board_input = [board]  # Coloca o tabuleiro em uma lista para que seja compatível com a entrada do modelo
-    move_probabilities = best_mlp.predict(board_input)  # Obtém as probabilidades de cada posição
+    move_probabilities = best_mlp.forward(board_input)  # Obtém as probabilidades de cada posição
 
     # Escolhe o índice com maior probabilidade para a jogada
     best_move = move_probabilities.argmax()  # Melhor jogada com base no modelo
