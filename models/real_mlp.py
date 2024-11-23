@@ -155,7 +155,7 @@ class GeneticAlgorithm:
                 game_ongoing, winner = self.is_game_ongoing(board_state)
 
                 if game_ongoing:
-                    board_state = self.pseudo_minimax(board_state, 'easy')
+                    board_state = self.pseudo_minimax(board_state, 'medium')
                     print("Estado do tabuleiro após jogada do adversário:", board_state)
                     game_ongoing, winner = self.is_game_ongoing(board_state)
                     if game_ongoing:
@@ -275,7 +275,7 @@ class GeneticAlgorithm:
                     self.apply_move(board_state, mlp_move)
                     game_ongoing, winner = self.is_game_ongoing(board_state)
                     if game_ongoing:
-                        board_state = self.pseudo_minimax(board_state, 'easy')
+                        board_state = self.pseudo_minimax(board_state, 'medium')
                         game_ongoing, winner = self.is_game_ongoing(board_state)
                 else:
                     game_ongoing = False
@@ -365,11 +365,11 @@ class GeneticAlgorithm:
 num_generations = 1000
 
 # Inicializa o Algoritmo Genético
-gen_alg = GeneticAlgorithm(population_size=10, mutation_rate=0.2)
+gen_alg = GeneticAlgorithm(population_size=10, mutation_rate=0.2, convergence_threshold=0.001)
 
 # Executa o AG
 print("Executando o Algoritmo Genético...")
-gen_alg.run(num_generations)
+gen_alg.run(num_generations, test_after_training=True)
 
 # Consulta as melhores soluções após a execução
 top_n = 5  # Número de melhores soluções que queremos inspecionar
