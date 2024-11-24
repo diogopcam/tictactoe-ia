@@ -373,23 +373,53 @@ class GeneticAlgorithm:
         best_individuals, _ = self.get_best_solutions(top_n=1)
         return best_individuals[0]
 
-# # Número de gerações
-# num_generations = 500
-#
-# # Inicializa o Algoritmo Genético
-# gen_alg = GeneticAlgorithm(population_size=10, mutation_rate=0.2, convergence_threshold=0.001)
-#
-# # Executa o AG
-# print("Executando o Algoritmo Genético...")
-# gen_alg.run(num_generations, test_after_training=True)
-#
-# # Consulta as melhores soluções após a execução
-# top_n = 5  # Número de melhores soluções que queremos inspecionar
-# best_individuals, best_fitness = gen_alg.get_best_solutions(top_n=top_n)
-#
-# # Exibe as melhores soluções
-# print(f"\nMelhores {top_n} soluções encontradas após {num_generations} gerações:")
-# for i, (individual, fitness) in enumerate(zip(best_individuals, best_fitness), 1):
-#     print(f"Solução #{i}:")
-#     print(f"  Genes: {individual}")
-#     print(f"  Aptidão: {fitness:.2f}")
+# Número de gerações
+num_generations = 500
+
+# Inicializa o Algoritmo Genético
+gen_alg = GeneticAlgorithm(population_size=10, mutation_rate=0.2, convergence_threshold=0.001)
+
+# Executa o AG
+print("Executando o Algoritmo Genético...")
+gen_alg.run(num_generations, test_after_training=True)
+
+# Obter o melhor modelo (indivíduo) do Algoritmo Genético
+best_individual = gen_alg.get_best_model()
+
+# Inicializar o MLP com os pesos e vieses do melhor modelo
+mlp = SimpleMLP()
+mlp.initialize_weights_and_bias(best_individual[:180])  # Inicializa com os primeiros 180 genes (pesos e vieses)
+
+# Definir o estado do tabuleiro (exemplo de tabuleiro inicial vazio)
+board_state = [0] * 9  # Tabuleiro vazio (0 indica célula vazia)
+
+# Fazer jogadas usando o MLP
+game_ongoing = True
+while game_ongoing:
+    # Obter a jogada do MLP
+    mlp_move = gen_alg.translate_output_to_binary(mlp.forward(board_state))
+
+    # Verificar se a jogada do MLP é válida
+    if gen_alg.is_valid_move(board_state, mlp_move):
+        gen_alg.apply_move(board_state, mlp_move)  # Aplicar a jogada no tabuleiro
+        print("Estado do tabuleiro após a jogada do MLP:", board_state)
+
+        # Verificar se o jogo continua
+        game_ongoing, winner = gen_alg.is_game_ongoing(board_state)
+
+        # Se o jogo não terminou, fazer a jogada do adversário (minimax)
+        if game_ongoing:
+            board_state = gen_alg.pseudo_minimax(board_state, 'easy')
+            print("Estado do tabuleiro após jogada do adversário:", board_state)
+            game_ongoing, winner = gen_alg.is_game_ongoing(board_state)
+    else:
+        print("Jogada inválida, jogo termina.")
+        game_ongoing = False
+
+# Exibir resultado final do jogo
+if winner == 1:
+    print("Vitória!")
+elif winner == -1:
+    print("Derrota!")
+else:
+    print("Empate!")

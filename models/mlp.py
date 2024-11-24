@@ -43,4 +43,5 @@ class MLPModel:
             print(f"Erro na predição: {e}")
             return []
 
+
 ## Esse pessoal não se preparou nem um pouco né!
