@@ -15,7 +15,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Número de gerações
-num_generations = 500
+num_generations = 10
 
 # Inicializa o Algoritmo Genético
 gen_alg = GeneticAlgorithm(population_size=10, mutation_rate=0.2, convergence_threshold=0.001)
@@ -169,14 +169,21 @@ def play_with_mlp():
     # Realiza o forward pass para obter as probabilidades de cada jogada
     move_probabilities = mlp.forward(board_input)  # O MLP retorna a probabilidade de jogadas para cada posição
 
+    # Elimina as posições já ocupadas
+    for i, value in enumerate(board):
+        if value != 0:  # Se a posição estiver ocupada (1 para 'X' ou -1 para 'O')
+            move_probabilities[i] = -float('inf')  # Define uma probabilidade impossível para posições ocupadas
+
     # Escolhe a posição com a maior probabilidade como a melhor jogada
     best_move = np.argmax(move_probabilities)  # Obtém o índice da posição com maior probabilidade
 
     print("Tabuleiro recebido: ", board)
     print("Melhor jogada sugerida pelo MLP: ", best_move)
 
+    best_move = int(best_move)  # Converte de numpy.int64 para um inteiro normal
+
     # Retorna a melhor jogada para o cliente (como um índice de 0 a 8)
-    return jsonify({'best_move': int(best_move)})
+    return jsonify({'best_move': best_move})
 
 if __name__ == '__main__':
     app.run(debug=True)
