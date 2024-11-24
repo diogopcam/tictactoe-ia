@@ -16,7 +16,7 @@ CORS(app)
 
 # Número de gerações
 # Número de gerações
-num_generations = 500
+num_generations = 10
 
 # Inicializa o Algoritmo Genético
 gen_alg = GeneticAlgorithm(population_size=10, mutation_rate=0.2, convergence_threshold=0.001)
@@ -154,8 +154,9 @@ def play_with_mlp():
     if not board or len(board) != 9:
         return jsonify({'error': 'Tabuleiro inválido. Certifique-se de que é uma lista de 9 elementos.'}), 400
 
-    # Obtenha o melhor modelo MLP do Algoritmo Genético
-    best_individual = gen_alg.get_best_model()
+    best_individual, best_fitness = gen_alg.get_best_model()
+    print("Melhor modelo:", best_individual)
+    print("Aptidão do melhor modelo:", best_fitness)
 
     if best_individual is None:
         return jsonify({'error': 'O Algoritmo Genético ainda não foi executado ou não gerou um modelo válido.'}), 500

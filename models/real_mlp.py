@@ -155,7 +155,7 @@ class GeneticAlgorithm:
                 game_ongoing, winner = self.is_game_ongoing(board_state)
 
                 if game_ongoing:
-                    board_state = self.pseudo_minimax(board_state, 'easy')
+                    board_state = self.pseudo_minimax(board_state, 'medium')
                     print("Estado do tabuleiro após jogada do adversário:", board_state)
                     game_ongoing, winner = self.is_game_ongoing(board_state)
                     if game_ongoing:
@@ -184,25 +184,40 @@ class GeneticAlgorithm:
         self.previous_fitness = fitness_values
         return change < self.convergence_threshold
 
-    def select(self):
+    def select(self, elitism_count=2):
+        # Calcular os valores de fitness
         fitness_values = np.array([self.fitness(ind) for ind in self.population])
         print("Fitness values (raw):", fitness_values)
 
-        min_fitness = fitness_values.min()
-        if min_fitness < 0:
-            fitness_values += abs(min_fitness) + 1
+        # Ordenar os indivíduos pela fitness (do melhor para o pior)
+        sorted_indices = np.argsort(fitness_values)[::-1]
 
+        # Selecionar os indivíduos elite
+        elite_individuals = self.population[sorted_indices[:elitism_count]]
+        print("Elite individuals:", elite_individuals)
+
+        # Ajustar os valores de fitness para seleção probabilística
+        fitness_values = fitness_values - fitness_values.min() + 1
         probabilities = fitness_values / fitness_values.sum()
         print("Probabilities:", probabilities)
 
-        indices = np.random.choice(range(self.population_size), size=2, p=probabilities)
-        print("Selected indices:", indices)
-        return self.population[indices[0]], self.population[indices[1]]
+        # Seleção probabilística para o restante da população
+        selected_indices = np.random.choice(range(self.population_size), size=self.population_size - elitism_count,
+                                            p=probabilities)
+        selected_individuals = self.population[selected_indices]
+
+        # Selecionar dois pais de forma aleatória
+        parent1, parent2 = selected_individuals[np.random.choice(len(selected_individuals), 2, replace=False)]
+        print(f"Pais selecionados: {parent1}, {parent2}")
+
+        # Retornar apenas os dois pais selecionados
+        return parent1, parent2
 
     def crossover(self, parent1, parent2):
         print("Realizando crossover.")
-        child = (parent1[:180] + parent2[:180]) / 2
-        return np.append(child, 0)
+        # Assuming parents are numpy arrays or lists with a length of at least 180
+        child = (parent1[:180] + parent2[:180]) / 2  # Element-wise average of first 180 elements
+        return np.append(child, 0)  # Append 0 to the child, but make sure this is intended
 
     def mutate(self, individual):
         print("Mutação em andamento.")
@@ -275,7 +290,7 @@ class GeneticAlgorithm:
                     self.apply_move(board_state, mlp_move)
                     game_ongoing, winner = self.is_game_ongoing(board_state)
                     if game_ongoing:
-                        board_state = self.pseudo_minimax(board_state, 'easy')
+                        board_state = self.pseudo_minimax(board_state, 'medium')
                         game_ongoing, winner = self.is_game_ongoing(board_state)
                 else:
                     game_ongoing = False
@@ -364,11 +379,14 @@ class GeneticAlgorithm:
     def get_best_model(self):
         """
         Retorna o melhor modelo gerado pelo Algoritmo Genético, que é o indivíduo
-        com a maior aptidão da população.
+        com a maior aptidão da população, junto com seu valor de aptidão.
 
         Returns:
-            np.ndarray: O vetor de características (genes) do melhor modelo.
+            tuple: Uma tupla contendo:
+                - np.ndarray: O vetor de características (genes) do melhor modelo.
+                - float: O valor da aptidão do melhor modelo.
         """
-        # Obtém as melhores soluções (top 1) e retorna o melhor indivíduo
-        best_individuals, _ = self.get_best_solutions(top_n=1)
-        return best_individuals[0]
+        # Obtém as melhores soluções (top 1) e retorna o melhor indivíduo e sua aptidão
+        best_individuals, best_fitness = self.get_best_solutions(top_n=1)
+        return best_individuals[0], best_fitness[0]
+
