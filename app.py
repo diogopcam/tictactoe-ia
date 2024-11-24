@@ -15,7 +15,8 @@ app = Flask(__name__)
 CORS(app)
 
 # Número de gerações
-num_generations = 10
+# Número de gerações
+num_generations = 500
 
 # Inicializa o Algoritmo Genético
 gen_alg = GeneticAlgorithm(population_size=10, mutation_rate=0.2, convergence_threshold=0.001)
