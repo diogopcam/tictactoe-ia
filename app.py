@@ -110,6 +110,7 @@ def play_with_minimax():
     data = request.json
     board = data.get('board')  # Recebe o tabuleiro como uma lista de 9 elementos
     difficulty = data.get('difficulty', 'hard')  # A dificuldade pode ser usada para ajustar o nível da IA
+    print("O nível de dificuldade do minimax é "+difficulty)
 
     if not board or len(board) != 9:
         return jsonify({'error': 'Tabuleiro inválido. Certifique-se de que é uma lista de 9 elementos.'}), 400
