@@ -88,12 +88,11 @@ class SimpleMLP:
 
     def initialize_weights_and_bias(self, weights):
         print("Inicializando pesos e vieses do MLP.")
-
         self.weights_input_hidden = np.array(weights[:81]).reshape(9, 9) * np.sqrt(2. / 9)
-        self.bias_hidden = np.zeros(9)
+        self.bias_hidden = np.array(weights[81:90])
 
         self.weights_hidden_output = np.array(weights[90:171]).reshape(9, 9) * np.sqrt(2. / 9)
-        self.bias_output = np.zeros(9)
+        self.bias_output = np.array(weights[171:])
 
     def relu(self, x):
         return np.maximum(0, x)
