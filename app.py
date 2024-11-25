@@ -15,7 +15,6 @@ app = Flask(__name__)
 CORS(app)
 
 # Número de gerações
-# Número de gerações
 num_generations = 100
 
 # Inicializa o Algoritmo Genético
@@ -25,9 +24,11 @@ gen_alg = GeneticAlgorithm(population_size=10, mutation_rate=0.2, convergence_th
 print("Executando o Algoritmo Genético...")
 gen_alg.run(num_generations, test_after_training=True)
 
-# Consulta as melhores soluções após a execução
-top_n = 5  # Número de melhores soluções que queremos inspecionar
-best_individuals, best_fitness = gen_alg.get_best_solutions(top_n=top_n)
+# # Plotar a acurácia ao longo das gerações
+# gen_alg.plot_accuracy()
+#
+# # Plotar o fitness médio ao longo das gerações
+# gen_alg.plot_fitness()
 
 # Inicializando os modelos
 knn_model = KNN()

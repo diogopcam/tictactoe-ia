@@ -81,99 +81,158 @@ class Minimax:
 
 class SimpleMLP:
     def __init__(self):
-        self.weights_input_hidden = None
-        self.bias_hidden = None
-        self.weights_hidden_output = None
-        self.bias_output = None
+        # Inicialização dos parâmetros, mas ainda sem definir
+        self.weights_input_hidden = None  # Pesos da camada de entrada para a camada oculta
+        self.bias_hidden = None  # Bias da camada oculta
+        self.weights_hidden_output = None  # Pesos da camada oculta para a camada de saída
+        self.bias_output = None  # Bias da camada de saída
 
     def initialize_weights_and_bias(self, weights):
-        print("Inicializando pesos e vieses do MLP.")
+        """
+        Inicializa os pesos e os biases para a rede neural a partir de um vetor único de parâmetros.
 
+        Parâmetros:
+        - weights (array): Vetor de parâmetros que contém tanto os pesos quanto os biases da rede.
+        """
+        # A primeira parte do vetor (81 valores) são os pesos de entrada para a camada oculta (9x9)
         self.weights_input_hidden = np.array(weights[:81]).reshape(9, 9) * np.sqrt(2. / 9)
-        self.bias_hidden = np.zeros(9)
 
+        # A segunda parte do vetor (9 valores) são os biases da camada oculta (9 elementos)
+        self.bias_hidden = np.zeros(9)  # Inicializa todos os biases da camada oculta como zero
+
+        # A terceira parte do vetor (81 valores) são os pesos da camada oculta para a camada de saída (9x9)
         self.weights_hidden_output = np.array(weights[90:171]).reshape(9, 9) * np.sqrt(2. / 9)
-        self.bias_output = np.zeros(9)
+
+        # A última parte do vetor (9 valores) são os biases da camada de saída (9 elementos)
+        self.bias_output = np.zeros(9)  # Inicializa todos os biases da camada de saída como zero
+
 
     def relu(self, x):
+        """
+        Função de ativação ReLU.
+        """
         return np.maximum(0, x)
 
+
     def sigmoid(self, x):
+        """
+        Função de ativação sigmoide.
+        """
         return 1 / (1 + np.exp(-x))
 
+
     def forward(self, board_state):
-        print("Realizando forward pass no MLP com estado atual do tabuleiro:", board_state)
+        """
+        Realiza a propagação para frente (forward pass) na rede neural.
 
+        Parâmetros:
+        - board_state (array): O estado atual do tabuleiro do jogo (9 posições).
+
+        Retorna:
+        - output (array): A saída da rede neural (probabilidade de cada possível jogada).
+        """
+        # Calculando a entrada da camada oculta
         hidden_input = np.dot(board_state, self.weights_input_hidden) + self.bias_hidden
-        hidden_output = self.relu(hidden_input)
+        hidden_output = self.relu(hidden_input)  # Ativação da camada oculta
 
+        # Calculando a entrada da camada de saída
         output_input = np.dot(hidden_output, self.weights_hidden_output) + self.bias_output
-        output = self.sigmoid(output_input)
-        print("Saída do MLP:", output)
+        output = self.sigmoid(output_input)  # Ativação da camada de saída
 
         return output
 
+
 class GeneticAlgorithm:
     def __init__(self, population_size, mutation_rate, convergence_threshold=0.1):
-        print("Inicializando Algoritmo Genético.")
         self.population_size = population_size
         self.mutation_rate = mutation_rate
         self.convergence_threshold = convergence_threshold
-        self.population = np.random.uniform(-1, 1, (self.population_size, 181))
-        print(f"População inicial gerada (tamanho {self.population_size}).")
+        self.population = np.random.uniform(-1, 1, (self.population_size, 181))  # 180 parâmetros + 1 para fitness
         self.previous_fitness = None
-        self.accuracy_history = []  # Lista para armazenar a acurácia ao longo das gerações
-        self.fitness_history = []   # Lista para armazenar o fitness ao longo das gerações
+        self.accuracy_history = []  # Acurácia por geração
+        self.fitness_history = []  # Fitness médio por geração
+
+        # Matriz para armazenar cada indivíduo e seu respectivo fitness
+        self.population_with_fitness = []
+
+        # Inicializa a população com o fitness calculado
+        self.update_population_with_fitness()
+
+        # Print inicial da população
+        print("Inicializando a população:")
+        for i, (ind, fitness) in enumerate(self.population_with_fitness):
+            print(f"Indivíduo {i + 1} - Pesos e Biases:")
+            print(f"Pesos Entrada-oculta: {ind[:81]}")
+            print(f"Biases Oculta: {ind[81:90]}")
+            print(f"Pesos Oculta-saída: {ind[90:171]}")
+            print(f"Biases Saída: {ind[171:180]}")
+            print(f"Fitness: {fitness}\n")
+
+    def update_population_with_fitness(self):
+        """ Atualiza a lista com indivíduos e seus respectivos fitness """
+        self.population_with_fitness = [(ind, self.fitness(ind)) for ind in self.population]
 
     def get_best_solutions(self, top_n=1):
-        fitness_values = np.array([self.fitness(ind) for ind in self.population])
-        sorted_indices = np.argsort(fitness_values)[::-1]
-        best_individuals = self.population[sorted_indices[:top_n]]
-        best_fitness = fitness_values[sorted_indices[:top_n]]
+        """
+        Retorna os melhores indivíduos da população com base no fitness.
+
+        Parâmetros:
+        - top_n (int): Número de melhores soluções a serem retornadas.
+
+        Retorna:
+        - best_individuals (array): Melhores indivíduos.
+        - best_fitness (array): Fitness dos melhores indivíduos.
+        """
+        # Ordena os indivíduos pela aptidão
+        self.update_population_with_fitness()
+        sorted_population = sorted(self.population_with_fitness, key=lambda x: x[1], reverse=True)
+
+        best_individuals = np.array([ind for ind, _ in sorted_population[:top_n]])
+        best_fitness = np.array([fitness for _, fitness in sorted_population[:top_n]])
         return best_individuals, best_fitness
 
     def fitness(self, individual):
-        print("Calculando fitness para um indivíduo.")
         mlp = SimpleMLP()
         game_ongoing = True
         winner = 0
 
+        # Inicializa pesos e vieses (sem modificar o indivíduo diretamente)
         mlp.initialize_weights_and_bias(individual[:180])
         board_state = [0] * 9
+        fitness_value = 0  # Inicia o valor do fitness
 
         while game_ongoing:
             mlp_move = self.translate_output_to_binary(mlp.forward(board_state))
 
             if self.is_valid_move(board_state, mlp_move):
-                individual[180] += 0.2
+                fitness_value += 0.2  # Incrementa o fitness baseado na ação válida
                 self.apply_move(board_state, mlp_move)
-                print("Estado do tabuleiro após a jogada da MLP:", board_state)
 
                 game_ongoing, winner = self.is_game_ongoing(board_state)
 
                 if game_ongoing:
                     board_state = self.pseudo_minimax(board_state, 'easy')
-                    print("Estado do tabuleiro após jogada do adversário:", board_state)
                     game_ongoing, winner = self.is_game_ongoing(board_state)
                     if game_ongoing:
-                        individual[180] += 0.2
+                        fitness_value += 0.2  # Incrementa novamente
+
             else:
-                print("Jogada inválida.")
                 winner = -1
                 game_ongoing = False
 
-        print("Jogo terminou. Resultado:", "Vitória" if winner == 1 else "Derrota" if winner == -1 else "Empate")
-
         if winner == 1:
-            individual[180] *= 1.35
+            fitness_value *= 1.35  # Ganhou, ajusta o fitness
         elif winner == -1:
-            individual[180] *= 0.35
+            fitness_value *= 0.35  # Perdeu, ajusta o fitness
         else:
-            individual[180] *= 1
+            fitness_value *= 1  # Empatou, não altera
 
-        return individual[180]
+        return fitness_value
 
     def converge(self, fitness_values):
+        """
+        Verifica se a população convergiu com base no threshold de mudança na aptidão.
+        """
         if self.previous_fitness is None:
             self.previous_fitness = fitness_values
             return False
@@ -181,23 +240,24 @@ class GeneticAlgorithm:
         self.previous_fitness = fitness_values
         return change < self.convergence_threshold
 
+    def get_population_with_fitness(self):
+        """ Retorna a população atual com fitness """
+        return self.population_with_fitness
+
     def select(self, elitism_count=2):
         fitness_values = np.array([self.fitness(ind) for ind in self.population])
-        print("Fitness values (raw):", fitness_values)
 
         # Ordena os indivíduos pela aptidão e seleciona o elitismo
         sorted_indices = np.argsort(fitness_values)[::-1]
 
-        # Seleciona os indivíduos elitistas
+        # Seleciona os elitistas
         elite_individuals = self.population[sorted_indices[:elitism_count]]
-        print("Elite individuals:", elite_individuals)
 
         # Ajuste da aptidão para garantir que não existam aptidões negativas (se necessário)
         fitness_values = fitness_values - fitness_values.min() + 1
 
         # Calcula as probabilidades de seleção (proporcional à aptidão)
         probabilities = fitness_values / fitness_values.sum()
-        print("Probabilities:", probabilities)
 
         # Seleciona os indivíduos para a próxima geração com base nas probabilidades
         selected_indices = np.random.choice(range(self.population_size), size=self.population_size - elitism_count,
@@ -210,11 +270,14 @@ class GeneticAlgorithm:
         # Seleciona dois pais aleatórios entre os selecionados
         parent1, parent2 = new_population[np.random.choice(len(new_population), 2, replace=False)]
 
-        print(f"Pais selecionados: {parent1}, {parent2}")
-
         return parent1, parent2
 
+    # Outras funções (como crossover, mutate, etc) permanecem inalteradas..
+
     def crossover_one_point(self, parent1, parent2):
+        """
+        Realiza o crossover de um ponto entre dois pais.
+        """
         crossover_point = random.randint(1, len(parent1) - 1)
 
         child1 = np.concatenate((parent1[:crossover_point], parent2[crossover_point:]))
@@ -223,28 +286,50 @@ class GeneticAlgorithm:
         return child1, child2
 
     def crossover(self, parent1, parent2):
-        print("Realizando crossover.")
-        return self.crossover_one_point(parent1, parent2)
+        """
+        Realiza o crossover entre dois pais e imprime os resultados.
+        """
+        child1, child2 = self.crossover_one_point(parent1, parent2)
+
+        # Print após crossover
+        print("\nCrossover entre pais:")
+        print(f"Pai 1 - Pesos e Biases: {parent1[:180]}")
+        print(f"Pai 2 - Pesos e Biases: {parent2[:180]}")
+        print(f"Filho 1 - Pesos e Biases: {child1[:180]}")
+        print(f"Filho 2 - Pesos e Biases: {child2[:180]}")
+
+        return child1, child2
 
     def mutate(self, individual):
-        print("Mutação em andamento.")
+        """
+        Aplica mutação nos pesos e vieses de um indivíduo.
+        """
         for i in range(180):
             if random.uniform(0, 1) < self.mutation_rate:
-                individual[i] += np.random.uniform(-0.1, 0.1)
+                individual[i] += np.random.uniform(-0.1, 0.1)  # Mutação dos pesos e biases
+
+        # Print após mutação
+        print("\nMutação do indivíduo:")
+        print(f"Indivíduo antes da mutação: {individual[:180]}")
+        print(f"Indivíduo após mutação: {individual[:180]}")
+
         return individual
 
     def apply_move(self, board_state, move):
-        print("Aplicando jogada:", move)
+        """
+        Aplica o movimento de um jogador no estado do tabuleiro.
+        """
         for i in range(len(board_state)):
             if board_state[i] == 0 and move[i] == 1:
                 board_state[i] = move[i]
                 break
 
     def pseudo_minimax(self, estado, difficulty):
-        print("Adversário jogando (minimax).")
+        """
+        Simula o comportamento do adversário usando uma estratégia minimax simples.
+        """
         minimax = Minimax(estado)
         free_positions = minimax.livres(estado)
-        print("Posições livres: ", free_positions)
 
         if difficulty == 'easy':
             best_move = random.choice(free_positions)
@@ -258,6 +343,9 @@ class GeneticAlgorithm:
         return new_board_state
 
     def is_game_ongoing(self, board_state):
+        """
+        Verifica se o jogo está em andamento e retorna o vencedor.
+        """
         win_conditions = [
             [0, 1, 2], [3, 4, 5], [6, 7, 8],
             [0, 3, 6], [1, 4, 7], [2, 5, 8],
@@ -274,6 +362,9 @@ class GeneticAlgorithm:
         return True, 0
 
     def is_valid_move(self, board_state, binary_move):
+        """
+        Verifica se o movimento é válido.
+        """
         if sum(binary_move) != 1:
             return False
         for i in range(len(board_state)):
@@ -282,10 +373,10 @@ class GeneticAlgorithm:
         return False
 
     def test_accuracy(self, num_games=100):
-        print(f"Testando a rede em {num_games} jogos...")
+        """
+        Testa a precisão do modelo em uma série de jogos.
+        """
         best_individual, best_fitness = self.get_best_model()
-        print("Essa é a melhor solução: " + str(best_individual))
-        print("Esse é o melhor fitness: " + str(best_fitness))
 
         mlp = SimpleMLP()
         mlp.initialize_weights_and_bias(best_individual[:180])
@@ -314,48 +405,34 @@ class GeneticAlgorithm:
                 ties += 1
 
         accuracy = (wins + ties / 2) / num_games
-        print(f"Resultado do teste após {num_games} jogos:")
-        print(f"Vitórias: {wins}, Derrotas: {losses}, Empates: {ties}")
-        print(f"Acurácia: {accuracy * 100:.2f}%")
-
+        return accuracy
 
     def run(self, generations, test_after_training=True):
-        print(f"Iniciando o algoritmo genético para {generations} gerações.")
+        """
+        Executa o algoritmo genético por um número de gerações.
+        """
         for generation in range(1, generations + 1):
-            print(f"\n--- Geração {generation} ---")
             fitness_values = self.evolve()
 
             max_fitness = fitness_values.max()
             avg_fitness = fitness_values.mean()
-            print(f"Máxima aptidão da geração {generation}: {max_fitness:.2f}")
-            print(f"Aptidão média da geração {generation}: {avg_fitness:.2f}")
 
-            # Armazenando o fitness de cada geração
             self.fitness_history.append(avg_fitness)
 
-            # Teste de acurácia após cada geração
             accuracy = self.test_accuracy_per_generation()
-            self.accuracy_history.append(accuracy)  # Armazenando a acurácia de cada geração
+            self.accuracy_history.append(accuracy)
 
             if self.converge(fitness_values):
-                print(f"Convergência atingida na geração {generation}. O algoritmo será interrompido.")
                 break
-        #
-        # if test_after_training:
-        #     print("\nIniciando o teste após o treinamento...")
-        #     self.test_accuracy()
-        #
-        # # Plotando a acurácia
-        # self.plot_accuracy()
-        # self.plot_fitness()
 
     def test_accuracy_per_generation(self):
-        print("Testando a acurácia da geração atual...")
+        """
+        Testa a precisão do modelo em cada geração.
+        """
         best_individual, _ = self.get_best_model()
         mlp = SimpleMLP()
         mlp.initialize_weights_and_bias(best_individual[:180])
 
-        # Testa a acurácia do melhor indivíduo após cada geração
         wins, losses, ties = 0, 0, 0
         for _ in range(100):  # Pode ajustar o número de jogos conforme necessário
             board_state = [0] * 9
@@ -380,58 +457,63 @@ class GeneticAlgorithm:
                 ties += 1
 
         accuracy = (wins + ties / 2) / 100  # Acurácia em percentual
-        print(f"Acurácia após a geração: {accuracy * 100:.2f}%")
         return accuracy
 
-    # def plot_accuracy(self):
-    #     plt.plot(self.accuracy_history)
-    #     plt.title('Acurácia do MLP ao Longo das Gerações')
-    #     plt.xlabel('Geração')
-    #     plt.ylabel('Acurácia (%)')
-    #     plt.grid(True)
-    #     plt.show()
-    #
-    # def plot_fitness(self):
-    #     plt.figure(figsize=(10, 5))
-    #     plt.plot(self.fitness_history, label="Fitness Médio", color='b')
-    #     plt.title('Fitness Médio ao Longo das Gerações')
-    #     plt.xlabel('Geração')
-    #     plt.ylabel('Fitness Médio')
-    #     plt.grid(True)
-    #     plt.legend()
-    #     plt.show()
+    def plot_accuracy(self):
+        """
+        Plota a acurácia ao longo das gerações.
+        """
+        plt.plot(self.accuracy_history)
+        plt.title('Acurácia do MLP ao Longo das Gerações')
+        plt.xlabel('Geração')
+        plt.ylabel('Acurácia (%)')
+        plt.grid(True)
+        plt.show()
 
-    def evolve(self, elitism_count=1):
-        print("Iniciando evolução da população com elitismo.")
+    def plot_fitness(self):
+        """
+        Plota o fitness médio ao longo das gerações.
+        """
+        plt.figure(figsize=(10, 5))
+        plt.plot(self.fitness_history, label="Fitness Médio", color='b')
+        plt.title('Fitness Médio ao Longo das Gerações')
+        plt.xlabel('Geração')
+        plt.ylabel('Fitness Médio')
+        plt.grid(True)
+        plt.legend()
+        plt.show()
 
-        fitness_values = np.array([self.fitness(ind) for ind in self.population])
+    def get_best_solutions(self, top_n=1):
+        """
+        Retorna os melhores indivíduos da população com base no fitness.
 
-        elite_indices = fitness_values.argsort()[-elitism_count:][::-1]
-        elite_s = self.population[elite_indices]
-        print(f"Indivíduos elite selecionados: {elite_indices}")
+        Parâmetros:
+        - top_n (int): Número de melhores soluções a serem retornadas.
 
-        new_population = []
+        Retorna:
+        - best_individuals (array): Melhores indivíduos.
+        - best_fitness (array): Fitness dos melhores indivíduos.
+        """
+        # Ordena os indivíduos pela aptidão
+        self.update_population_with_fitness()
+        sorted_population = sorted(self.population_with_fitness, key=lambda x: x[1], reverse=True)
 
-        new_population.extend(elite_s)
-        print(f"Elite adicionada à nova população ({len(elite_s)} indivíduos).")
+        best_individuals = np.array([ind for ind, _ in sorted_population[:top_n]])
+        best_fitness = np.array([fitness for _, fitness in sorted_population[:top_n]])
+        return best_individuals, best_fitness
 
-        while len(new_population) < self.population_size:
-            parent1, parent2 = self.select()
-            child1, child2 = self.crossover(parent1, parent2)
-            self.mutate(child1)
-            self.mutate(child2)
-            new_population.extend([child1, child2])
-
-        self.population = np.array(new_population[:self.population_size])
-        print("População evoluída para a próxima geração.")
-
-        return fitness_values
 
     def get_best_model(self):
+        """
+        Retorna o melhor modelo (indivíduo) com base na aptidão.
+        """
         best_individuals, best_fitness = self.get_best_solutions(top_n=1)
         return best_individuals[0], best_fitness[0]
 
     def translate_output_to_binary(self, output):
+        """
+        Converte a saída do MLP para uma representação binária.
+        """
         binary_vector = np.zeros_like(output)
         max_index = np.argmax(output)
         binary_vector[max_index] = 1
