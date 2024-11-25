@@ -152,7 +152,7 @@ class GeneticAlgorithm:
                 game_ongoing, winner = self.is_game_ongoing(board_state)
 
                 if game_ongoing:
-                    board_state = self.pseudo_minimax(board_state, 'medium')
+                    board_state = self.pseudo_minimax(board_state, 'easy')
                     print("Estado do tabuleiro após jogada do adversário:", board_state)
                     game_ongoing, winner = self.is_game_ongoing(board_state)
                     if game_ongoing:
@@ -300,7 +300,7 @@ class GeneticAlgorithm:
                     self.apply_move(board_state, mlp_move)
                     game_ongoing, winner = self.is_game_ongoing(board_state)
                     if game_ongoing:
-                        board_state = self.pseudo_minimax(board_state, 'medium')
+                        board_state = self.pseudo_minimax(board_state, 'easy')
                         game_ongoing, winner = self.is_game_ongoing(board_state)
                 else:
                     game_ongoing = False
@@ -340,14 +340,14 @@ class GeneticAlgorithm:
             if self.converge(fitness_values):
                 print(f"Convergência atingida na geração {generation}. O algoritmo será interrompido.")
                 break
-
-        if test_after_training:
-            print("\nIniciando o teste após o treinamento...")
-            self.test_accuracy()
-
-        # Plotando a acurácia
-        self.plot_accuracy()
-        self.plot_fitness()
+        #
+        # if test_after_training:
+        #     print("\nIniciando o teste após o treinamento...")
+        #     self.test_accuracy()
+        #
+        # # Plotando a acurácia
+        # self.plot_accuracy()
+        # self.plot_fitness()
 
     def test_accuracy_per_generation(self):
         print("Testando a acurácia da geração atual...")
@@ -366,7 +366,7 @@ class GeneticAlgorithm:
                     self.apply_move(board_state, mlp_move)
                     game_ongoing, winner = self.is_game_ongoing(board_state)
                     if game_ongoing:
-                        board_state = self.pseudo_minimax(board_state, 'medium')
+                        board_state = self.pseudo_minimax(board_state, 'easy')
                         game_ongoing, winner = self.is_game_ongoing(board_state)
                 else:
                     game_ongoing = False
@@ -383,23 +383,23 @@ class GeneticAlgorithm:
         print(f"Acurácia após a geração: {accuracy * 100:.2f}%")
         return accuracy
 
-    def plot_accuracy(self):
-        plt.plot(self.accuracy_history)
-        plt.title('Acurácia do MLP ao Longo das Gerações')
-        plt.xlabel('Geração')
-        plt.ylabel('Acurácia (%)')
-        plt.grid(True)
-        plt.show()
-
-    def plot_fitness(self):
-        plt.figure(figsize=(10, 5))
-        plt.plot(self.fitness_history, label="Fitness Médio", color='b')
-        plt.title('Fitness Médio ao Longo das Gerações')
-        plt.xlabel('Geração')
-        plt.ylabel('Fitness Médio')
-        plt.grid(True)
-        plt.legend()
-        plt.show()
+    # def plot_accuracy(self):
+    #     plt.plot(self.accuracy_history)
+    #     plt.title('Acurácia do MLP ao Longo das Gerações')
+    #     plt.xlabel('Geração')
+    #     plt.ylabel('Acurácia (%)')
+    #     plt.grid(True)
+    #     plt.show()
+    #
+    # def plot_fitness(self):
+    #     plt.figure(figsize=(10, 5))
+    #     plt.plot(self.fitness_history, label="Fitness Médio", color='b')
+    #     plt.title('Fitness Médio ao Longo das Gerações')
+    #     plt.xlabel('Geração')
+    #     plt.ylabel('Fitness Médio')
+    #     plt.grid(True)
+    #     plt.legend()
+    #     plt.show()
 
     def evolve(self, elitism_count=1):
         print("Iniciando evolução da população com elitismo.")
