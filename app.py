@@ -16,7 +16,7 @@ CORS(app)
 
 # Número de gerações
 # Número de gerações
-num_generations = 10
+num_generations = 100
 
 # Inicializa o Algoritmo Genético
 gen_alg = GeneticAlgorithm(population_size=10, mutation_rate=0.2, convergence_threshold=0.001)
@@ -28,13 +28,6 @@ gen_alg.run(num_generations, test_after_training=True)
 # Consulta as melhores soluções após a execução
 top_n = 5  # Número de melhores soluções que queremos inspecionar
 best_individuals, best_fitness = gen_alg.get_best_solutions(top_n=top_n)
-
-# Exibe as melhores soluções
-print(f"\nMelhores {top_n} soluções encontradas após {num_generations} gerações:")
-for i, (individual, fitness) in enumerate(zip(best_individuals, best_fitness), 1):
-    print(f"Solução #{i}:")
-    print(f"  Genes: {individual}")
-    print(f"  Aptidão: {fitness:.2f}")
 
 # Inicializando os modelos
 knn_model = KNN()
