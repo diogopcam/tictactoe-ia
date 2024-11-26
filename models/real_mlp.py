@@ -151,6 +151,8 @@ class GeneticAlgorithm:
         self.previous_fitness = None
         self.accuracy_history = []  # Acurácia por geração
         self.fitness_history = []  # Fitness médio por geração
+        self.best_solution = None
+        self.best_fitness = -float('inf')  # Inicializa com um valor bem baixo para comparação
 
         # Matriz para armazenar cada indivíduo e seu respectivo fitness
         self.population_with_fitness = []
@@ -171,25 +173,6 @@ class GeneticAlgorithm:
     def update_population_with_fitness(self):
         """ Atualiza a lista com indivíduos e seus respectivos fitness """
         self.population_with_fitness = [(ind, self.fitness(ind)) for ind in self.population]
-
-    def get_best_solutions(self, top_n=1):
-        """
-        Retorna os melhores indivíduos da população com base no fitness.
-
-        Parâmetros:
-        - top_n (int): Número de melhores soluções a serem retornadas.
-
-        Retorna:
-        - best_individuals (array): Melhores indivíduos.
-        - best_fitness (array): Fitness dos melhores indivíduos.
-        """
-        # Ordena os indivíduos pela aptidão
-        self.update_population_with_fitness()
-        sorted_population = sorted(self.population_with_fitness, key=lambda x: x[1], reverse=True)
-
-        best_individuals = np.array([ind for ind, _ in sorted_population[:top_n]])
-        best_fitness = np.array([fitness for _, fitness in sorted_population[:top_n]])
-        return best_individuals, best_fitness
 
     def fitness(self, individual):
         mlp = SimpleMLP()
@@ -376,7 +359,7 @@ class GeneticAlgorithm:
         """
         Testa a precisão do modelo em uma série de jogos.
         """
-        best_individual, best_fitness = self.get_best_model()
+        best_individual, best_fitness = self.best_solutionici
 
         mlp = SimpleMLP()
         mlp.initialize_weights_and_bias(best_individual[:180])
@@ -483,32 +466,102 @@ class GeneticAlgorithm:
         plt.legend()
         plt.show()
 
-    def get_best_solutions(self, top_n=1):
+    def evolve(self, elitism_count=1):
         """
-        Retorna os melhores indivíduos da população com base no fitness.
-
-        Parâmetros:
-        - top_n (int): Número de melhores soluções a serem retornadas.
-
-        Retorna:
-        - best_individuals (array): Melhores indivíduos.
-        - best_fitness (array): Fitness dos melhores indivíduos.
+        Evolui a população selecionando os melhores indivíduos, realizando crossover e mutação.
         """
-        # Ordena os indivíduos pela aptidão
+        # Atualizar a população com fitness antes de qualquer modificação
         self.update_population_with_fitness()
+
+        # Imprime os fitness de todos os indivíduos da população
+        print("\nFitness de cada solução na população:")
+        for i, (ind, fitness) in enumerate(self.population_with_fitness):
+            print(f"Solução {i + 1} - Fitness: {fitness}")
+
+        # Ordena os indivíduos pela aptidão (fitness) de forma decrescente
         sorted_population = sorted(self.population_with_fitness, key=lambda x: x[1], reverse=True)
 
-        best_individuals = np.array([ind for ind, _ in sorted_population[:top_n]])
-        best_fitness = np.array([fitness for _, fitness in sorted_population[:top_n]])
-        return best_individuals, best_fitness
+        # Garantir que o fitness mais alto esteja no topo
+        print("\nPopulação após ordenação por fitness (decrescente):")
+        for i, (ind, fitness) in enumerate(sorted_population):
+            print(f"Solução {i + 1} - Fitness: {fitness}")
 
+        # Seleção dos 2 melhores indivíduos (pais)
+        parent1, parent2 = sorted_population[0][0], sorted_population[1][0]
+
+        # Exibe os dois melhores indivíduos
+        print("\nSeleção dos pais para a próxima geração:")
+        print(f"Pai 1 - Fitness: {sorted_population[0][1]}")
+        print(f"Pesos Entrada-oculta: {parent1[:81]}")
+        print(f"Biases Oculta: {parent1[81:90]}")
+        print(f"Pesos Oculta-saída: {parent1[90:171]}")
+        print(f"Biases Saída: {parent1[171:180]}\n")
+
+        print(f"Pai 2 - Fitness: {sorted_population[1][1]}")
+        print(f"Pesos Entrada-oculta: {parent2[:81]}")
+        print(f"Biases Oculta: {parent2[81:90]}")
+        print(f"Pesos Oculta-saída: {parent2[90:171]}")
+        print(f"Biases Saída: {parent2[171:180]}\n")
+
+        # Crossover entre os dois melhores pais
+        child1, child2 = self.crossover(parent1, parent2)
+
+        # Mutação nos filhos gerados
+        self.mutate(child1)
+        self.mutate(child2)
+
+        # Nova população que será gerada, começando com os elitistas
+        new_population = [parent1, parent2]  # Inicia com os pais
+
+        # Adiciona os filhos gerados à nova população
+        new_population.extend([child1, child2])
+
+        # Restante da população será gerada por crossover e mutação
+        while len(new_population) < self.population_size:
+            # Seleção de pais para crossover (não incluindo os elitistas)
+            parent1, parent2 = self.select(elitism_count=0)
+
+            # Crossover
+            child1, child2 = self.crossover(parent1, parent2)
+
+            # Mutação nos filhos
+            self.mutate(child1)
+            self.mutate(child2)
+
+            # Adiciona os filhos à população
+            new_population.extend([child1, child2])
+
+        # Limita o tamanho da população à quantidade necessária
+        self.population = np.array(new_population[:self.population_size])
+
+        # Atualiza a população com os fitnesses
+        self.update_population_with_fitness()
+
+        print("\nNova geração após crossover e mutação:")
+        for i, (ind, fitness) in enumerate(self.population_with_fitness):
+            print(f"Indivíduo {i + 1} - Fitness: {fitness}")
+            print(f"Pesos Entrada-oculta: {ind[:81]}")
+            print(f"Biases Oculta: {ind[81:90]}")
+            print(f"Pesos Oculta-saída: {ind[90:171]}")
+            print(f"Biases Saída: {ind[171:180]}")
+            print("...\n")
+
+        # Identifica a melhor solução da última geração
+        best_solution, best_fitness = sorted(self.population_with_fitness, key=lambda x: x[1], reverse=True)[0]
+        # Atualiza a melhor solução e o fitness
+        self.best_solution = best_solution
+        self.best_fitness = best_fitness
+
+        print(f"\nESSA É A MELHOR SOLUÇÃO -> SOLUÇÃO: {best_solution} - FITNESS: {best_fitness}")
+
+        return np.array([fitness for _, fitness in self.population_with_fitness])
 
     def get_best_model(self):
         """
         Retorna o melhor modelo (indivíduo) com base na aptidão.
         """
-        best_individuals, best_fitness = self.get_best_solutions(top_n=1)
-        return best_individuals[0], best_fitness[0]
+        best_individuals, best_fitness = self.best_solution, self.best_fitness
+        return best_individuals, best_fitness
 
     def translate_output_to_binary(self, output):
         """

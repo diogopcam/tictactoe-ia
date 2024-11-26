@@ -9,13 +9,8 @@ import random
 
 from models.real_mlp import GeneticAlgorithm, SimpleMLP
 
-app = Flask(__name__)
-
-# Habilita CORS para todas as rotas e origens
-CORS(app)
-
 # Número de gerações
-num_generations = 100
+num_generations = 5
 
 # Inicializa o Algoritmo Genético
 gen_alg = GeneticAlgorithm(population_size=10, mutation_rate=0.2, convergence_threshold=0.001)
@@ -23,12 +18,36 @@ gen_alg = GeneticAlgorithm(population_size=10, mutation_rate=0.2, convergence_th
 # Executa o AG
 print("Executando o Algoritmo Genético...")
 gen_alg.run(num_generations, test_after_training=True)
+best_individual, best_fitness = gen_alg.best_solution, gen_alg.best_fitness
 
-# # Plotar a acurácia ao longo das gerações
+print("Essa é a melhor solucao a partir da classe principal: " + str(gen_alg.best_solution))
+print("Essa é o melhor fitnessa a partir da classe principal: "+ str(gen_alg.best_fitness))
+
+# Armazena o melhor modelo encontrado permanentemente
+global best_model
+
+best_model = best_individual
+
+print("Melhor modelo encontrado:", best_model)
+print("Aptidão do melhor modelo:", best_fitness)
+
+# Armazena os 180 primeiros elementos de best_model em uma variável
+weights_and_biases = best_model[:180]
+print("Esses sao os pesos da melhor solucao: "+str(weights_and_biases))
+
+mlp = SimpleMLP()
+mlp.initialize_weights_and_bias(best_model[:180])  # Inicializa com os primeiros 180 genes (pesos e vieses)
+
+# # # Plotar a acurácia ao longo das gerações
 # gen_alg.plot_accuracy()
 #
 # # Plotar o fitness médio ao longo das gerações
 # gen_alg.plot_fitness()
+
+app = Flask(__name__)
+
+# Habilita CORS para todas as rotas e origens
+CORS(app)
 
 # Inicializando os modelos
 knn_model = KNN()
@@ -39,6 +58,7 @@ gradient_boosting_model = GradientBoosting()
 # knn_model.train_model_knn()
 # gradient_boosting_model.train_model_gb()
 # mlp_model.train_model_mlp()
+
 @app.route('/ping', methods=['GET'])
 def ping():
     return jsonify({'message': 'Servidor está funcionando!'})
@@ -140,7 +160,8 @@ def play_with_minimax():
 
 @app.route('/play/mlp', methods=['POST'])
 def play_with_mlp():
-    # Recebe os dados JSON do tabuleiro enviado pelo cliente
+
+    # O tabuleiro é uma lista de 9 elementos (representando as casas do jogo)
     data = request.json
     board = data.get('board')  # O tabuleiro será uma lista de 9 elementos, representando o estado do jogo
 
@@ -148,19 +169,8 @@ def play_with_mlp():
     if not board or len(board) != 9:
         return jsonify({'error': 'Tabuleiro inválido. Certifique-se de que é uma lista de 9 elementos.'}), 400
 
-    best_individual, best_fitness = gen_alg.get_best_model()
-    print("Melhor modelo:", best_individual)
-    print("Aptidão do melhor modelo:", best_fitness)
-
-    if best_individual is None:
-        return jsonify({'error': 'O Algoritmo Genético ainda não foi executado ou não gerou um modelo válido.'}), 500
-
-    # Inicializa o MLP com os pesos e vieses do melhor modelo gerado pelo Algoritmo Genético
-    mlp = SimpleMLP()
-    mlp.initialize_weights_and_bias(best_individual[:180])  # Inicializa com os primeiros 180 genes (pesos e vieses)
-
-    # O tabuleiro é uma lista de 9 elementos (representando as casas do jogo)
-    board_input = np.array(board)  # Converte o tabuleiro para um array NumPy para compatibilidade com o MLP
+    # Converte o tabuleiro para um array NumPy para compatibilidade com o MLP
+    board_input = np.array(board)
 
     # Realiza o forward pass para obter as probabilidades de cada jogada
     move_probabilities = mlp.forward(board_input)  # O MLP retorna a probabilidade de jogadas para cada posição
@@ -175,6 +185,7 @@ def play_with_mlp():
 
     print("Tabuleiro recebido: ", board)
     print("Melhor jogada sugerida pelo MLP: ", best_move)
+    print()
 
     best_move = int(best_move)  # Converte de numpy.int64 para um inteiro normal
 
